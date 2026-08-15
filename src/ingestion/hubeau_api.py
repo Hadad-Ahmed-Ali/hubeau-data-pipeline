@@ -3,31 +3,39 @@ Module d'ingestion des données de l'API Hub'Eau.
 """
 
 import requests
+import pandas as pd
 
 
-def fetch_hubeau_data(code_commune, code_parametre, size=10):
+BASE_URL = (
+    "https://hubeau.eaufrance.fr/api/v1/"
+    "qualite_eau_potable/resultats_dis"
+)
+
+
+def fetch_hubeau_data(
+    code_commune: str,
+    code_parametre: str,
+    size: int = 1000
+) -> list[dict]:
     """
-    Récupère les données de l'API Hub'Eau avec pagination.
+    Récupère les résultats de l'API Hub'Eau avec pagination.
 
     Parameters
     ----------
     code_commune : str
-        Code INSEE de la commune.
+        Code de la commune à interroger.
+
     code_parametre : str
         Code du paramètre analysé.
-    size : int, default=10
+
+    size : int, default=1000
         Nombre de résultats demandés par page.
 
     Returns
     -------
-    list
-        Liste contenant les résultats retournés par l'API.
+    list[dict]
+        Liste contenant tous les résultats récupérés.
     """
-
-    url = (
-        "https://hubeau.eaufrance.fr/"
-        "api/v1/qualite_eau_potable/resultats_dis"
-    )
 
     params = {
         "code_commune": code_commune,
@@ -36,13 +44,12 @@ def fetch_hubeau_data(code_commune, code_parametre, size=10):
         "size": size
     }
 
-    response = requests.get(url, params=params)
+    response = requests.get(BASE_URL, params=params)
     response.raise_for_status()
 
     data = response.json()
 
-    tous_les_resultats = []
-    tous_les_resultats.extend(data["data"])
+    all_results = data["data"]
 
     next_url = data["next"]
 
@@ -52,8 +59,28 @@ def fetch_hubeau_data(code_commune, code_parametre, size=10):
 
         data_page = response.json()
 
-        tous_les_resultats.extend(data_page["data"])
+        all_results.extend(data_page["data"])
 
         next_url = data_page["next"]
 
-    return tous_les_resultats
+    return all_results
+
+
+def build_raw_dataframe(
+    observations: list[dict]
+) -> pd.DataFrame:
+    """
+    Transforme les observations de l'API en DataFrame RAW.
+
+    Une préparation légère est réalisée sur la colonne
+    date_prelevement.
+    """
+
+    hub_raw = pd.DataFrame(observations)
+
+    hub_raw["date_prelevement"] = pd.to_datetime(
+        hub_raw["date_prelevement"],
+        utc=True
+    )
+
+    return hub_raw
