@@ -72,3 +72,63 @@ def test_fetch_hubeau_data(monkeypatch):
     assert observations[0]["code_commune"] == "45234"
     assert observations[0]["code_parametre"] == "1340"
     assert observations[0]["resultat_numerique"] == 3.5
+
+
+def test_fetch_hubeau_data_pagination(monkeypatch):
+    """Vérifie que toutes les pages de l'API sont récupérées."""
+
+    first_page = {
+        "data": [
+            {
+                "code_commune": "45234",
+                "code_parametre": "1340",
+                "reference_analyse": "analyse_001"
+            }
+        ],
+        "next": "https://fake-api.test/page=2"
+    }
+
+    second_page = {
+        "data": [
+            {
+                "code_commune": "45234",
+                "code_parametre": "1340",
+                "reference_analyse": "analyse_002"
+            }
+        ],
+        "next": None
+    }
+
+    class FakeResponse:
+        """Simule une réponse HTTP."""
+
+        def __init__(self, data):
+            self.data = data
+
+        def raise_for_status(self):
+            pass
+
+        def json(self):
+            return self.data
+
+    def fake_get(url, params=None):
+        """Retourne une réponse différente selon la page demandée."""
+
+        if params is not None:
+            return FakeResponse(first_page)
+
+        return FakeResponse(second_page)
+
+    monkeypatch.setattr(
+        "src.ingestion.hubeau_api.requests.get",
+        fake_get
+    )
+
+    observations = fetch_hubeau_data(
+        code_commune="45234",
+        code_parametre="1340"
+    )
+
+    assert len(observations) == 2
+    assert observations[0]["reference_analyse"] == "analyse_001"
+    assert observations[1]["reference_analyse"] == "analyse_002"
