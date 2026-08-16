@@ -62,7 +62,7 @@ Les transformations métier seront volontairement réalisées dans les couches s
 
 ---
 
-## 💧 Source de données
+## Source de données
 
 Le projet utilise l'API publique **Hub'Eau — Qualité de l'eau potable**.
 
@@ -123,8 +123,8 @@ La documentation technique détaillée de la source est disponible dans [`docs/a
 Cette architecture permet de séparer les différentes responsabilités :
 
 **Python** → ingestion et préparation technique minimale  
-**BigQuery** → Stockage des données sources et des données modélisées
-**dbt** → transformation, qualité et modélisation SQL
+**BigQuery** → stockage des données sources et des données modélisées  
+**dbt** → transformation, qualité et modélisation SQL  
 **DIM / FACT** → couche analytique  
 **BI** → exploitation et visualisation des données
 
