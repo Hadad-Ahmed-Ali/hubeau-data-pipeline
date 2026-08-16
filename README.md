@@ -1,6 +1,6 @@
 ## 👤 Auteur
 
-**Amed Adad**
+**Hadad Ahmed**
 
 En début de carrière et actuellement en recherche d'emploi dans le domaine de la Data, je développe ce projet personnel de Data Analytics Engineering autour des données publiques sur la qualité de l'eau potable issues de l'API Hub'Eau.
 
