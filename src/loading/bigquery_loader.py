@@ -48,3 +48,39 @@ RESULTATS_DIS_SCHEMA = [
         ],
     ),
 ]
+
+
+def load_to_bigquery(
+    dataframe,
+    project_id,
+    dataset_id="hubeau_raw",
+    table_id="resultats_dis_raw",
+):
+    """Charge le DataFrame RAW Hub'Eau dans BigQuery.
+
+    Le chargement utilise WRITE_TRUNCATE :
+    le contenu de la table est remplacé à chaque exécution.
+    """
+
+    client = bigquery.Client(project=project_id)
+
+    destination = (
+        f"{project_id}.{dataset_id}.{table_id}"
+    )
+
+    job_config = bigquery.LoadJobConfig(
+        schema=RESULTATS_DIS_SCHEMA,
+        write_disposition=bigquery.WriteDisposition.WRITE_TRUNCATE,
+    )
+
+    load_job = client.load_table_from_dataframe(
+        dataframe,
+        destination,
+        job_config=job_config,
+    )
+
+    load_job.result()
+
+    table = client.get_table(destination)
+
+    return table
