@@ -637,4 +637,4 @@ Hub'Eau API → Python → BigQuery RAW
 
 est actuellement **opérationnelle et testée**.
 
-La prochaine étape du projet est la construction de la couche **dbt**.
+La prochaine étape du projet est la construction de la couche **dbt** pour les modélisations SQL décisionnelles.
