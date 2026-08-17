@@ -13,19 +13,18 @@ Pipeline de données construit à partir de l'API publique **Hub'Eau — Qualit�
 Hub'Eau API
      │
      ▼
-   Python
+   Python : Extraction des données via API, exploration, nettoyage et contrôles légers
      │
      ▼
-BigQuery RAW
+BigQuery : Stockage des données brutes et Data Warehouse pour les modélisations dbt
      │
      ▼
-    dbt
+    dbt : Transformation et modélisation SQL
+          Staging → Intermediate → Dimensions / Facts
+          Tests et contrôles automatisés de qualité
      │
      ▼
-DIM / FACT
-     │
-     ▼
-Analytics / BI
+Power BI : Visualisation, analyse et suivi des indicateurs
 ```
 
 Le projet a pour objectif de mettre en œuvre progressivement une chaîne de données complète : **extraction API, ingestion Python, stockage BigQuery, modélisation dbt, tests, documentation et exploitation analytique**.
@@ -66,7 +65,7 @@ python src/run_ingestion.py
 ### Prochaines étapes
 
 ```text
-BigQuery RAW
+BigQuery
      │
      ▼
     dbt
@@ -552,7 +551,7 @@ Elle décrit notamment :
 - [x] Structurer le code Python
 - [x] Ajouter les tests unitaires
 
-### Phase 2 — BigQuery RAW
+### Phase 2 — BigQuery
 
 - [x] Créer `hubeau_raw`
 - [x] Définir le schéma BigQuery
@@ -611,7 +610,7 @@ Hub'Eau API
 Python ingestion
       │
       ▼
-BigQuery RAW
+BigQuery
       │
       ▼
 dbt staging
@@ -626,7 +625,7 @@ dbt marts
       └── facts
              │
              ▼
-        Analytics / BI
+        Power BI : Analytics / BI
 ```
 
 La couche :
