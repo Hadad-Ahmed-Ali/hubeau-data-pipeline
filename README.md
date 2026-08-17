@@ -4,61 +4,83 @@
 
 En début de carrière et actuellement en recherche d'emploi dans le domaine de la Data, je développe ce projet personnel de Data Analytics Engineering autour des données publiques sur la qualité de l'eau potable issues de l'API Hub'Eau.
 
----
-
-## Licence
-
-Ce projet utilise des données publiques provenant de Hub'Eau.
-
-Les conditions d'utilisation et les licences applicables aux données restent celles définies par les producteurs et diffuseurs des données sources.
-
----
 
 # Hub'Eau Data Pipeline
 
-Pipeline Data Engineering permettant d'extraire les données de qualité de l'eau potable depuis l'API **Hub'Eau**, de les préparer avec **Python**, puis à terme de les charger dans **BigQuery** et de les transformer avec **dbt** afin de construire une couche analytique exploitable pour la visualisation.
+Pipeline de données construit à partir de l'API publique **Hub'Eau — Qualité de l'eau potable**, avec une architecture orientée Data Engineering :
 
-> **Statut du projet :** En cours de développement  
-> **Étape actuelle :** ingestion Python, pagination, préparation RAW, tests unitaires et documentation de l'API.
+```text
+Hub'Eau API
+     │
+     ▼
+   Python
+     │
+     ▼
+BigQuery RAW
+     │
+     ▼
+    dbt
+     │
+     ▼
+DIM / FACT
+     │
+     ▼
+Analytics / BI
+```
+
+Le projet a pour objectif de mettre en œuvre progressivement une chaîne de données complète : **extraction API, ingestion Python, stockage BigQuery, modélisation dbt, tests, documentation et exploitation analytique**.
 
 ---
 
-## Objectif du projet
+## État du projet
 
-L'objectif est de construire progressivement un pipeline de données complet autour des données publiques de qualité de l'eau potable.
+### Opérationnel
 
-Le projet suit une logique proche d'un environnement Data Engineering :
+La première grande brique du pipeline est terminée :
 
 ```text
 API Hub'Eau
      │
      ▼
-   Python : Extraction des données + contrôles légers
+Extraction Python
      │
      ▼
-BigQuery : Data Warehouse - Stockage des données RAW et des données modélisées
+Pagination automatique
      │
      ▼
-    dbt : Transformation, tests qualité et modélisation SQL
+DataFrame RAW
      │
-     ├── STG
-     ├── ODS
-     └── DIM / FACT
-              │
-              ▼
-        POWER BI : Visualisation / tableaux de bord
+     ▼
+Chargement BigQuery
+     │
+     ▼
+hubeau_raw.resultats_dis_raw
 ```
 
-La première étape consiste à construire une ingestion Python capable de :
+Le pipeline peut être déclenché manuellement avec une seule commande :
 
-- interroger l'API Hub'Eau ;
-- gérer automatiquement la pagination ;
-- récupérer l'ensemble des observations correspondant au périmètre demandé ;
-- convertir les données JSON en DataFrame pandas ;
-- effectuer une préparation technique légère ;
-- tester automatiquement les principales fonctions du pipeline.
+```bash
+python src/run_ingestion.py
+```
 
-Les transformations métier seront volontairement réalisées dans les couches suivantes, principalement avec **dbt**.
+### Prochaines étapes
+
+```text
+BigQuery RAW
+     │
+     ▼
+    dbt
+     │
+     ├── staging
+     ├── intermediate
+     └── marts
+          │
+          ▼
+      DIM / FACT
+          │
+          ▼
+     Analytics / BI
+```
 
 ---
 
@@ -66,79 +88,93 @@ Les transformations métier seront volontairement réalisées dans les couches s
 
 Le projet utilise l'API publique **Hub'Eau — Qualité de l'eau potable**.
 
-Endpoint actuellement utilisé :
+Endpoint utilisé :
 
 ```text
 qualite_eau_potable/resultats_dis
 ```
 
-Il permet de récupérer les résultats des analyses réalisées sur les prélèvements d'eau distribuée.
-
-### Périmètre actuel
-
-La première version du pipeline utilise :
+Périmètre actuel :
 
 | Paramètre | Valeur | Description |
 |---|---:|---|
 | `code_commune` | `45234` | Orléans |
 | `code_parametre` | `1340` | Nitrates |
 
-Ce périmètre est utilisé pour construire et tester le pipeline. Les fonctions Python sont paramétrables afin de pouvoir étendre ultérieurement l'extraction à d'autres communes et paramètres.
-
-La documentation technique détaillée de la source est disponible dans [`docs/api_hubeau.md`](docs/api_hubeau.md).
+Ce périmètre permet de construire et valider l'architecture sur un jeu de données maîtrisé avant d'envisager une extension à d'autres communes ou paramètres.
 
 ---
 
-## Architecture cible
+## Architecture
 
 ```text
-                         ┌─────────────────┐
-                         │   API Hub'Eau   │
-                         └────────┬────────┘
-                                  │
-                                  ▼
-                         ┌─────────────────┐
-                         │     Python      │
-                         │   Ingestion     │
-                         └────────┬────────┘
-                                  │
-                                  ▼
-                         ┌─────────────────┐
-                         │  BigQuery RAW   │
-                         └────────┬────────┘
-                                  │
-                                  ▼
-                         ┌─────────────────┐
-                         │       dbt       │
-                         └────────┬────────┘
-                                  │
-                    ┌─────────────┼─────────────┐
-                    ▼             ▼             ▼
-                  STG            ODS        DIM / FACT
-                                                  │
-                                                  ▼
-                                         Visualisation / BI
+                    ┌─────────────────────┐
+                    │   API Hub'Eau       │
+                    └──────────┬──────────┘
+                               │
+                               ▼
+                    ┌─────────────────────┐
+                    │       Python        │
+                    │                     │
+                    │ - requêtes HTTP     │
+                    │ - pagination        │
+                    │ - DataFrame RAW     │
+                    └──────────┬──────────┘
+                               │
+                               ▼
+                    ┌─────────────────────┐
+                    │      BigQuery       │
+                    │                     │
+                    │     hubeau_raw      │
+                    │ resultats_dis_raw   │
+                    └──────────┬──────────┘
+                               │
+                               ▼
+                    ┌─────────────────────┐
+                    │        dbt          │
+                    │                     │
+                    │ staging             │
+                    │ intermediate        │
+                    │ marts               │
+                    └──────────┬──────────┘
+                               │
+                               ▼
+                    ┌─────────────────────┐
+                    │     DIM / FACT      │
+                    └──────────┬──────────┘
+                               │
+                               ▼
+                    ┌─────────────────────┐
+                    │   Analytics / BI    │
+                    └─────────────────────┘
 ```
 
-Cette architecture permet de séparer les différentes responsabilités :
+La couche **API → Python → BigQuery RAW** est actuellement opérationnelle.
 
-**Python** → ingestion et préparation technique minimale  
-**BigQuery** → stockage des données sources et des données modélisées  
-**dbt** → transformation, qualité et modélisation SQL  
-**DIM / FACT** → couche analytique  
-**BI** → exploitation et visualisation des données
+Les couches dbt et Analytics seront construites dans les prochaines phases du projet.
 
 ---
 
-## Ingestion Python
+## Stack technique
 
-Le code d'ingestion se trouve dans :
+### Actuellement utilisée
 
-```text
-src/ingestion/hubeau_api.py
-```
+- **Python**
+- **requests**
+- **pandas**
+- **Google BigQuery**
+- **Google Cloud SDK / gcloud**
+- **pytest**
+- **Git / GitHub**
 
-Le module contient la logique permettant de récupérer les données Hub'Eau et de construire le DataFrame RAW.
+### Prévue pour les prochaines étapes
+
+- **dbt**
+- outil de visualisation / BI à définir
+
+---
+
+## Fonctionnement de l'ingestion
 
 Le point d'entrée du pipeline est :
 
@@ -146,101 +182,224 @@ Le point d'entrée du pipeline est :
 src/run_ingestion.py
 ```
 
-### Gestion de la pagination
-
-L'API peut retourner les résultats sur plusieurs pages.
-
-Le pipeline suit automatiquement la propriété `next` retournée par Hub'Eau :
+Son exécution orchestre automatiquement :
 
 ```text
-Page 1
-   │
-   └── next
+python src/run_ingestion.py
           │
           ▼
-       Page 2
+fetch_hubeau_data()
           │
-          └── next
-                 │
-                 ▼
-                ...
-                 │
-                 ▼
-        Dernière page
-                 │
-                 └── next = None
+          ▼
+Pagination Hub'Eau
+          │
+          ▼
+build_raw_dataframe()
+          │
+          ▼
+DataFrame pandas
+          │
+          ▼
+load_to_bigquery()
+          │
+          ▼
+WRITE_TRUNCATE
+          │
+          ▼
+hubeau_raw.resultats_dis_raw
 ```
 
-L'ingestion n'est donc pas limitée au contenu de la première page.
+Le pipeline est volontairement **déclenché manuellement**.
+
+Dans le cadre de ce projet personnel, aucune exécution horaire ou quotidienne n'est planifiée afin de conserver le contrôle sur les exécutions et d'éviter une orchestration inutile à ce stade.
 
 ---
 
-## Préparation des données
+## BigQuery RAW
 
-Après extraction, les observations JSON sont converties en DataFrame pandas :
+Les données sont chargées dans :
 
 ```text
-API
- │
- ▼
-JSON
- │
- ▼
-Liste de dictionnaires
- │
- ▼
-DataFrame pandas
- │
- ▼
-hub_raw
+project-3665c0d5-5952-473b-82e
+└── hubeau_raw
+    └── resultats_dis_raw
 ```
 
-La préparation Python reste volontairement légère afin de préserver au maximum les données sources avant leur chargement dans la future couche RAW.
+Le schéma BigQuery est défini explicitement dans :
 
-Le champ `date_prelevement` est notamment converti en datetime UTC.
-
-### Champ imbriqué `reseaux`
-
-Le champ `reseaux` contient une structure imbriquée de type :
-
-```python
-[
-    {
-        "code": "045000474",
-        "nom": "ORLEANS"
-    },
-    {
-        "code": "045001825",
-        "nom": "SAINT JEAN DE LA RUELLE",
-        "debit": "100 %"
-    }
-]
+```text
+src/loading/bigquery_loader.py
 ```
 
-Cette structure n'est volontairement pas aplatie pendant l'ingestion.
+La table RAW contient actuellement **32 champs**.
 
-Son traitement sera étudié dans les couches de transformation et de modélisation.
+Parmi les types importants :
+
+```text
+date_prelevement     TIMESTAMP
+resultat_numerique   FLOAT
+reseaux              RECORD REPEATED
+```
+
+Le champ imbriqué `reseaux` est volontairement conservé dans sa structure native afin d'être traité ultérieurement dans la couche dbt.
+
+Il peut déjà être interrogé dans BigQuery avec `UNNEST()`.
+
+---
+
+## Stratégie de chargement
+
+Le pipeline utilise actuellement :
+
+```text
+WRITE_TRUNCATE
+```
+
+À chaque exécution, le périmètre Hub'Eau est extrait intégralement puis remplace le contenu de :
+
+```text
+hubeau_raw.resultats_dis_raw
+```
+
+Cette stratégie a été retenue car le volume actuel est faible et qu'une extraction complète reste simple et adaptée au contexte du projet.
+
+Une stratégie incrémentale pourra être étudiée ultérieurement si le périmètre ou le volume augmente.
+
+---
+
+## Authentification Google Cloud
+
+Le pipeline utilise un compte de service dédié :
+
+```text
+hubeau-pipeline@project-3665c0d5-5952-473b-82e.iam.gserviceaccount.com
+```
+
+Aucune clé JSON permanente de compte de service n'est stockée dans le repository.
+
+L'environnement utilise :
+
+```text
+Compte Google utilisateur
+        │
+        ▼
+      gcloud
+        │
+        ▼
+Impersonation
+        │
+        ▼
+hubeau-pipeline
+        │
+        ▼
+Application Default Credentials
+        │
+        ▼
+google-cloud-bigquery
+```
+
+Cette approche permet au code Python d'utiliser les bibliothèques Google Cloud sans stocker de clé privée permanente dans GitHub.
+
+> Les tokens, codes d'authentification et fichiers locaux de credentials ne doivent jamais être commités dans le repository.
+
+---
+
+# Exécuter le projet
+
+## 1. Cloner le repository
+
+```bash
+git clone https://github.com/Hadad-Ahmed-Ali/hubeau-data-pipeline.git
+cd hubeau-data-pipeline
+```
+
+Si le repository est déjà présent :
+
+```bash
+git pull
+```
+
+---
+
+## 2. Installer les dépendances
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+## 3. Configurer le projet Google Cloud
+
+```bash
+gcloud config set project project-3665c0d5-5952-473b-82e
+```
+
+---
+
+## 4. Configurer l'impersonation
+
+```bash
+gcloud config set auth/impersonate_service_account \
+hubeau-pipeline@project-3665c0d5-5952-473b-82e.iam.gserviceaccount.com
+```
+
+---
+
+## 5. Configurer les Application Default Credentials
+
+Si les ADC ne sont pas encore disponibles dans l'environnement :
+
+```bash
+gcloud auth application-default login \
+  --impersonate-service-account=hubeau-pipeline@project-3665c0d5-5952-473b-82e.iam.gserviceaccount.com
+```
+
+Le processus ouvre une authentification Google.
+
+Les credentials ainsi générés restent locaux et ne doivent pas être ajoutés au repository.
+
+---
+
+## 6. Lancer le pipeline
+
+Depuis la racine du projet :
+
+```bash
+python src/run_ingestion.py
+```
+
+Une exécution validée du pipeline a produit :
+
+```text
+Début de l'ingestion Hub'Eau...
+Nombre de résultats récupérés : 311
+DataFrame créé : 311 lignes × 32 colonnes
+Chargement vers BigQuery...
+Table BigQuery chargée : project-3665c0d5-5952-473b-82e.hubeau_raw.resultats_dis_raw
+Nombre de lignes dans BigQuery : 311
+Pipeline d'ingestion terminé.
+```
+
+Le nombre de lignes peut évoluer au fil du temps lorsque de nouvelles analyses sont publiées par Hub'Eau.
 
 ---
 
 ## Tests
 
-Les tests automatisés sont réalisés avec **pytest** et se trouvent dans :
+Les tests automatisés utilisent **pytest**.
 
-```text
-tests/test_hubeau_api.py
-```
-
-Les tests actuels vérifient notamment :
+Ils couvrent actuellement :
 
 - la construction du DataFrame RAW ;
-- la conversion de `date_prelevement` ;
-- la récupération des données avec une réponse API simulée ;
-- la gestion de la pagination.
+- l'extraction Hub'Eau avec API simulée ;
+- la gestion de la pagination ;
+- le chargement BigQuery avec client simulé ;
+- la destination BigQuery ;
+- la stratégie `WRITE_TRUNCATE` ;
+- l'attente de la fin du job de chargement.
 
-Les appels HTTP sont simulés dans les tests unitaires afin de ne pas dépendre de la disponibilité réelle de l'API.
-
-Pour exécuter l'ensemble des tests :
+Lancer l'ensemble des tests :
 
 ```bash
 python -m pytest tests/ -v
@@ -249,12 +408,38 @@ python -m pytest tests/ -v
 État actuel :
 
 ```text
-3 tests passed
+4 tests passed
 ```
+
+Les appels API et BigQuery sont simulés dans les tests concernés afin d'éviter de dépendre des services externes ou d'écrire réellement dans BigQuery.
 
 ---
 
-## Structure du repository actuelle mais peut évoluer dans l'avenir
+## Validation de la couche RAW
+
+Lors d'une exécution de validation, la table BigQuery contenait :
+
+| Contrôle | Résultat |
+|---|---:|
+| Nombre de lignes | 311 |
+| `reference_analyse` distinctes | 311 |
+| Nombre de champs | 32 |
+| Date minimale | 2016-01-13 |
+| Date maximale | 2026-06-19 |
+
+Ces valeurs correspondent à une exécution donnée et peuvent évoluer avec les données publiées par Hub'Eau.
+
+Le champ `reseaux` a également été validé comme :
+
+```text
+RECORD REPEATED
+```
+
+et son exploitation avec `UNNEST()` a été testée avec succès.
+
+---
+
+## Structure du repository
 
 ```text
 hubeau-data-pipeline/
@@ -266,170 +451,190 @@ hubeau-data-pipeline/
 │   ├── ingestion/
 │   │   └── hubeau_api.py
 │   │
+│   ├── loading/
+│   │   └── bigquery_loader.py
+│   │
 │   └── run_ingestion.py
 │
 ├── tests/
-│   └── test_hubeau_api.py
+│   ├── test_hubeau_api.py
+│   └── test_bigquery_loader.py
 │
 ├── docs/
-│   └── api_hubeau.md
+│   └── pipeline_hubeau.md
 │
 ├── requirements.txt
 ├── README.md
 └── .gitignore
 ```
 
-### Rôle des dossiers
+### Responsabilités
 
-| Élément | Rôle |
+| Dossier / fichier | Rôle |
 |---|---|
-| `notebooks/` | Exploration et compréhension des données |
-| `src/` | Code Python du pipeline |
-| `src/ingestion/` | Extraction et préparation des données |
-| `tests/` | Tests automatisés |
-| `docs/` | Documentation technique |
+| `notebooks/` | Exploration initiale des données |
+| `src/ingestion/` | Extraction Hub'Eau et préparation RAW |
+| `src/loading/` | Chargement vers BigQuery |
+| `src/run_ingestion.py` | Point d'entrée du pipeline |
+| `tests/` | Tests unitaires |
+| `docs/` | Documentation technique détaillée |
 | `requirements.txt` | Dépendances Python |
-| `.gitignore` | Fichiers exclus du versionnement |
 
 ---
 
-## Installation
+## Tests et qualité
 
-### 1. Cloner le repository
+Le projet applique plusieurs principes visant à rendre le pipeline reproductible et maintenable :
 
-```bash
-git clone https://github.com/Hadad-Ahmed-Ali/hubeau-data-pipeline.git
+```text
+API réelle
+   │
+   └── remplacée par un mock dans les tests
+
+BigQuery réel
+   │
+   └── remplacé par un FakeBigQueryClient
+
+Schéma BigQuery
+   │
+   └── défini explicitement
+
+Pagination
+   │
+   └── testée automatiquement
+
+Chargement
+   │
+   └── WRITE_TRUNCATE vérifié automatiquement
 ```
 
-Puis :
-
-```bash
-cd hubeau-data-pipeline
-```
-
-### 2. Installer les dépendances
-
-```bash
-pip install -r requirements.txt
-```
-
-Les principales dépendances actuelles sont :
-
-- `requests`
-- `pandas`
-- `pytest`
+Cette séparation permet de tester la logique du pipeline sans dépendre systématiquement de services externes.
 
 ---
 
-## Exécuter l'ingestion
+## Documentation technique
 
-Depuis la racine du projet :
+La documentation détaillée du pipeline est disponible dans :
 
-```bash
-python src/run_ingestion.py
+```text
+docs/pipeline_hubeau.md
 ```
 
-Le pipeline :
+Elle décrit notamment :
 
-1. appelle l'API Hub'Eau ;
-2. récupère les différentes pages ;
-3. regroupe les observations ;
-4. construit le DataFrame RAW ;
-5. convertit la date de prélèvement.
-
-À ce stade du projet, les données sont conservées en mémoire. Le chargement vers BigQuery constitue la prochaine grande étape du pipeline.
-
----
-
-## Exécuter les tests
-
-Depuis la racine du repository :
-
-```bash
-python -m pytest tests/ -v
-```
-
-Les tests unitaires permettent de vérifier le comportement du code indépendamment de l'état réel de l'API Hub'Eau.
-
----
-
-## Technologies
-
-| Technologie | Utilisation |
-|---|---|
-| Python | Ingestion et préparation des données |
-| requests | Appels HTTP vers l'API |
-| pandas | Manipulation et préparation des données |
-| pytest | Tests unitaires |
-| Git / GitHub | Versionnement et documentation |
-| BigQuery | Data warehouse — prévu |
-| dbt | Transformation et modélisation — prévu |
-| BI | Visualisation — prévue |
+- l'API Hub'Eau ;
+- le périmètre d'extraction ;
+- la pagination ;
+- la préparation du DataFrame RAW ;
+- le traitement du champ `reseaux` ;
+- le schéma BigQuery ;
+- la stratégie `WRITE_TRUNCATE` ;
+- l'authentification GCP ;
+- l'impersonation du compte de service ;
+- les Application Default Credentials ;
+- le déclenchement manuel du pipeline ;
+- les contrôles BigQuery ;
+- les tests unitaires ;
+- l'architecture prévue pour dbt.
 
 ---
 
 ## Roadmap
 
-### Phase 1 — Exploration et ingestion Python
+### Phase 1 — API et Python
 
-- [x] Étudier l'API Hub'Eau
-- [x] Tester l'endpoint `resultats_dis`
-- [x] Comprendre la structure JSON
-- [x] Identifier la structure imbriquée `reseaux`
-- [x] Implémenter la pagination
+- [x] Explorer l'API Hub'Eau
+- [x] Identifier le périmètre initial
+- [x] Implémenter l'extraction HTTP
+- [x] Gérer la pagination
 - [x] Construire le DataFrame RAW
 - [x] Convertir les dates
 - [x] Structurer le code Python
 - [x] Ajouter les tests unitaires
-- [x] Documenter la source API
 
-### Phase 2 — BigQuery
+### Phase 2 — BigQuery RAW
 
-- [x] Configurer l'environnement GCP
-- [ ] Créer le dataset RAW
-- [ ] Définir le schéma de stockage
-- [ ] Charger les données dans BigQuery
-- [ ] Sécuriser et fiabiliser le chargement
+- [x] Créer `hubeau_raw`
+- [x] Définir le schéma BigQuery
+- [x] Conserver `reseaux` en `RECORD REPEATED`
+- [x] Implémenter `load_to_bigquery()`
+- [x] Configurer l'authentification GCP
+- [x] Charger `resultats_dis_raw`
+- [x] Valider les données dans BigQuery
+- [x] Intégrer le chargement dans `run_ingestion.py`
+- [x] Tester le loader BigQuery
 
 ### Phase 3 — dbt
 
-- [x] Initialiser le projet dbt
-- [ ] Déclarer les sources RAW
-- [ ] Construire les modèles STG
-- [ ] Construire la couche ODS
+- [ ] Connecter la couche RAW Hub'Eau à dbt
+- [ ] Déclarer la source BigQuery
+- [ ] Construire les modèles staging
+- [ ] Traiter la structure `reseaux`
+- [ ] Construire les modèles intermédiaires
 - [ ] Concevoir les dimensions
 - [ ] Concevoir les tables de faits
 - [ ] Ajouter les tests dbt
-- [ ] Générer la documentation dbt
+- [ ] Documenter la lineage
 
 ### Phase 4 — Analytics / BI
 
 - [ ] Définir les KPI
-- [ ] Connecter l'outil de visualisation
-- [ ] Construire les visualisations
+- [ ] Connecter un outil de visualisation
+- [ ] Construire les tableaux de bord
 - [ ] Documenter les indicateurs
-
----
-
-## Documentation
-
-La documentation technique détaillée est disponible dans :
-
-- [`docs/api_hubeau.md`](docs/api_hubeau.md) — fonctionnement de l'API, structure des données, pagination, préparation Python et tests ;
-- [`notebooks/01_exploration_hubeau.ipynb`](notebooks/01_exploration_hubeau.ipynb) — exploration initiale et compréhension progressive de la source.
 
 ---
 
 ## Principes du projet
 
-Ce projet est construit autour de quelques principes Data Engineering :
+Le projet suit plusieurs principes Data Engineering :
 
-- séparer l'exploration du code de production ;
-- conserver une couche RAW proche de la source ;
-- rendre le code d'ingestion réutilisable ;
-- automatiser les contrôles avec des tests ;
-- séparer ingestion et transformation ;
-- documenter les choix techniques ;
-- construire progressivement une architecture reproductible et maintenable.
+- séparation entre exploration, ingestion, stockage et transformation ;
+- couche RAW proche de la donnée source ;
+- schéma BigQuery explicite ;
+- conservation des structures imbriquées lorsqu'elles sont pertinentes ;
+- transformations métier réservées à dbt ;
+- composants Python testables indépendamment ;
+- absence de secrets permanents dans Git ;
+- déclenchement manuel maîtrisé ;
+- documentation évolutive ;
+- versionnement Git / GitHub.
 
 ---
+
+## Architecture cible
+
+```text
+Hub'Eau API
+      │
+      ▼
+Python ingestion
+      │
+      ▼
+BigQuery RAW
+      │
+      ▼
+dbt staging
+      │
+      ▼
+dbt intermediate
+      │
+      ▼
+dbt marts
+      │
+      ├── dimensions
+      └── facts
+             │
+             ▼
+        Analytics / BI
+```
+
+La couche :
+
+```text
+Hub'Eau API → Python → BigQuery RAW
+```
+
+est actuellement **opérationnelle et testée**.
+
+La prochaine étape du projet est la construction de la couche **dbt**.
