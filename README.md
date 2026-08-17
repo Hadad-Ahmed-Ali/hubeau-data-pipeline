@@ -385,7 +385,7 @@ Les tests unitaires permettent de vérifier le comportement du code indépendamm
 
 ### Phase 2 — BigQuery
 
-- [ ] Configurer l'environnement GCP : déjà fait
+- [x] Configurer l'environnement GCP
 - [ ] Créer le dataset RAW
 - [ ] Définir le schéma de stockage
 - [ ] Charger les données dans BigQuery
@@ -393,7 +393,7 @@ Les tests unitaires permettent de vérifier le comportement du code indépendamm
 
 ### Phase 3 — dbt
 
-- [ ] Initialiser le projet dbt : déjà fait
+- [x] Initialiser le projet dbt
 - [ ] Déclarer les sources RAW
 - [ ] Construire les modèles STG
 - [ ] Construire la couche ODS
