@@ -132,19 +132,19 @@ Ce périmètre permet de construire et valider l'architecture sur un jeu de donn
                     ┌─────────────────────┐
                     │        dbt          │
                     │                     │
-                    │ staging             │
-                    │ intermediate        │
-                    │ marts               │
+                    │ - staging           │
+                    │ - intermediate      │
+                    │ - Dimensions + Facts│
+                    │ - Tests/Data Quality│
                     └──────────┬──────────┘
                                │
                                ▼
                     ┌─────────────────────┐
-                    │     DIM / FACT      │
-                    └──────────┬──────────┘
-                               │
-                               ▼
-                    ┌─────────────────────┐
-                    │   Analytics / BI    │
+                    │       Power BI      │
+                    │                     │
+                    │ - KPI               │
+                    │ - Analyses          │
+                    │ - Tableaux de bord  │
                     └─────────────────────┘
 ```
 
@@ -631,7 +631,7 @@ dbt marts
 La couche :
 
 ```text
-Hub'Eau API → Python → BigQuery RAW
+Hub'Eau API → Python → BigQuery (extractions des données brutes)
 ```
 
 est actuellement **opérationnelle et testée**.
