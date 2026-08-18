@@ -7,7 +7,7 @@ En début de carrière et actuellement en recherche d'emploi dans le domaine de 
 
 # Hub'Eau Data Pipeline
 
-Pipeline de données construit à partir de l'API publique **Hub'Eau — Qualité de l'eau potable**, avec une architecture orientée Data Engineering :
+Pipeline de données construit à partir de l'API publique **Hub'Eau - Qualité de l'eau potable**, avec une architecture orientée Data Engineering :
 
 ```text
 Hub'Eau API
@@ -85,7 +85,7 @@ BigQuery
 
 ## Source de données
 
-Le projet utilise l'API publique **Hub'Eau — Qualité de l'eau potable**.
+Le projet utilise l'API publique **Hub'Eau - Qualité de l'eau potable**.
 
 Endpoint utilisé :
 
@@ -148,7 +148,7 @@ Ce périmètre permet de construire et valider l'architecture sur un jeu de donn
                     └─────────────────────┘
 ```
 
-La couche **API → Python → BigQuery RAW** est actuellement opérationnelle.
+La couche **API → Python → BigQuery** est actuellement opérationnelle.
 
 Les couches dbt et Analytics seront construites dans les prochaines phases du projet.
 
@@ -214,7 +214,7 @@ Dans le cadre de ce projet personnel, aucune exécution horaire ou quotidienne n
 
 ---
 
-## BigQuery RAW
+## BigQuery
 
 Les données sont chargées dans :
 
@@ -540,7 +540,7 @@ Elle décrit notamment :
 
 ## Roadmap
 
-### Phase 1 — API et Python
+### Phase 1 - API et Python
 
 - [x] Explorer l'API Hub'Eau
 - [x] Identifier le périmètre initial
@@ -551,7 +551,7 @@ Elle décrit notamment :
 - [x] Structurer le code Python
 - [x] Ajouter les tests unitaires
 
-### Phase 2 — BigQuery
+### Phase 2 - BigQuery
 
 - [x] Créer `hubeau_raw`
 - [x] Définir le schéma BigQuery
@@ -563,7 +563,7 @@ Elle décrit notamment :
 - [x] Intégrer le chargement dans `run_ingestion.py`
 - [x] Tester le loader BigQuery
 
-### Phase 3 — dbt
+### Phase 3 - dbt
 
 - [ ] Connecter la couche RAW Hub'Eau à dbt
 - [ ] Déclarer la source BigQuery
@@ -575,7 +575,7 @@ Elle décrit notamment :
 - [ ] Ajouter les tests dbt
 - [ ] Documenter la lineage
 
-### Phase 4 — Analytics / BI
+### Phase 4 - Analytics / BI
 
 - [ ] Définir les KPI
 - [ ] Connecter un outil de visualisation
