@@ -1338,7 +1338,7 @@ La partie **API Hub'Eau → Python → BigQuery RAW** est donc fonctionnelle et 
 
 ---
 
-# II — Modélisation : BigQuery RAW → dbt
+# II — Modélisation : BigQuery → dbt
 
 ## 27. Objectif de la couche dbt
 
@@ -1365,6 +1365,11 @@ BigQuery RAW
      ├── Intermediate / ODS
      │
      └── DIM / FACT
+     │
+     ▼
+BigQuery : Data Warehouse des transformations des données dbt
+     │
+     ▼
 ```
 
 ---
