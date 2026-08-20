@@ -7,8 +7,10 @@ En début de carrière et actuellement en recherche d'emploi dans le domaine de 
 
 # Hub'Eau Data Pipeline : **Projet en cours de développement**
 
+```text
 > API Hub'Eau → Python → BigQuery (la couche d'ingestion des données brutes) est opérationnelle et testée.
 > La modélisation SQL sur dbt , hébergée dans BigQuery comme Data Warehouse, constitue la prochaine étape.
+```
 
 Pipeline de données construit à partir de l'API publique **Hub'Eau - Qualité de l'eau potable**, avec une architecture orientée Data Engineering :
 
