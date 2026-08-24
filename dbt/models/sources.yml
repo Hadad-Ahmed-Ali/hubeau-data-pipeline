@@ -1,0 +1,9 @@
+version: 2
+
+sources:
+  - name: hubeau_raw
+    database: project-3665c0d5-5952-473b-82e
+    schema: hubeau_raw
+
+    tables:
+      - name: resultats_dis_raw
