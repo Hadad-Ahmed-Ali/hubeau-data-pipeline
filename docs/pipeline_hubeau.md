@@ -16,17 +16,18 @@ API Hub'Eau
    Python
      │
      ▼
-BigQuery RAW
+BigQuery
 
 II. MODÉLISATION
-BigQuery RAW
+BigQuery
      │
      ▼
     dbt
      │
      ├── STG
      ├── Intermediate / ODS
-     └── DIM / FACT
+     ├── DIM
+     └── FACT
 
 III. ANALYTICS
 DIM / FACT
@@ -38,7 +39,7 @@ Visualisation / BI
 Cette séparation permet de distinguer clairement :
 
 - l'acquisition et le stockage des données sources ;
-- les transformations et la modélisation ;
+- les transformations et la modélisation décisionnelle ;
 - l'exploitation analytique des données.
 
 ---
@@ -60,7 +61,7 @@ Le rôle de la couche d'ingestion est de :
 
 L'objectif est de conserver dans BigQuery une représentation aussi proche que possible de la donnée source.
 
-Les transformations analytiques et métier sont volontairement laissées à la couche de transformation, principalement avec **dbt**.
+Les transformations analytiques et métier sont volontairement laissées à la couche de transformation avec **dbt**.
 
 ---
 
@@ -133,8 +134,6 @@ Exemples de champs :
 
 Ces identifiants permettent de distinguer les prélèvements et les analyses retournés par l'API.
 
----
-
 ### 4.2 Informations géographiques
 
 Exemples :
@@ -145,8 +144,6 @@ Exemples :
 - `nom_commune`
 
 Ces informations pourront notamment être utilisées lors de la construction des futures dimensions géographiques.
-
----
 
 ### 4.3 Paramètre analysé
 
@@ -168,8 +165,6 @@ code_parametre = 1340
 
 correspond aux nitrates.
 
----
-
 ### 4.4 Résultat de l'analyse
 
 Les principaux champs sont notamment :
@@ -190,8 +185,6 @@ libelle_unite      = mg/L
 
 `resultat_numerique` constitue une mesure qui pourra être utilisée dans la future modélisation analytique.
 
----
-
 ### 4.5 Informations temporelles
 
 Le champ temporel principal est :
@@ -201,8 +194,6 @@ date_prelevement
 ```
 
 Il représente la date et l'heure du prélèvement.
-
----
 
 ### 4.6 Acteurs et installations
 
@@ -308,8 +299,6 @@ fetch_hubeau_data()
               ▼
       Liste d'observations
 ```
-
----
 
 ### 6.2 `build_raw_dataframe()`
 
@@ -462,7 +451,7 @@ Le traitement analytique définitif de cette structure sera réalisé dans la pa
 
 ### 9.1 Dataset
 
-Un dataset dédié au projet a été créé dans BigQuery :
+Un dataset dédié aux données brutes a été créé :
 
 ```text
 hubeau_raw
@@ -479,10 +468,6 @@ et dans la région :
 ```text
 europe-west1
 ```
-
-La couche RAW est volontairement séparée des autres projets de données présents dans le même environnement BigQuery.
-
----
 
 ### 9.2 Table RAW
 
@@ -633,11 +618,11 @@ Une stratégie incrémentale pourra être étudiée ultérieurement si le périm
 
 ---
 
-## 13. Authentification Google Cloud
+## 13. Authentification Google Cloud pour l'ingestion
 
 ### 13.1 Compte de service
 
-Un compte de service dédié au pipeline a été créé :
+Un compte de service dédié au pipeline d'ingestion a été créé :
 
 ```text
 hubeau-pipeline
@@ -651,21 +636,7 @@ hubeau-pipeline@project-3665c0d5-5952-473b-82e.iam.gserviceaccount.com
 
 L'objectif est d'éviter que le code du pipeline dépende directement des droits généraux du compte utilisateur.
 
----
-
-### 13.2 Accès au dataset
-
-Le compte de service dispose des permissions nécessaires pour travailler avec le dataset :
-
-```text
-hubeau_raw
-```
-
-L'accès a notamment été configuré afin de permettre l'écriture des données du pipeline dans la couche RAW.
-
----
-
-### 13.3 Absence de clé JSON permanente
+### 13.2 Absence de clé JSON permanente
 
 La création de clés de compte de service est désactivée dans l'environnement GCP par la règle :
 
@@ -673,9 +644,9 @@ La création de clés de compte de service est désactivée dans l'environnement
 iam.disableServiceAccountKeyCreation
 ```
 
-Aucune clé JSON de compte de service n'est donc stockée dans le repository.
+Aucune clé JSON de ce compte de service n'est donc stockée dans le repository.
 
-Le pipeline utilise à la place une authentification basée sur :
+Le pipeline d'ingestion utilise à la place :
 
 ```text
 Compte Google utilisateur
@@ -696,17 +667,9 @@ Application Default Credentials
 Bibliothèque Python BigQuery
 ```
 
-Cette approche évite de conserver une clé privée permanente dans le projet.
-
 ---
 
 ## 14. Impersonation du compte de service
-
-Le compte utilisateur autorisé peut agir temporairement comme :
-
-```text
-hubeau-pipeline
-```
 
 L'impersonation peut être configurée avec :
 
@@ -727,21 +690,9 @@ La configuration peut être contrôlée avec :
 gcloud config list
 ```
 
-Une configuration valide doit notamment indiquer :
-
-```text
-[auth]
-impersonate_service_account = hubeau-pipeline@...
-
-[core]
-project = project-3665c0d5-5952-473b-82e
-```
-
 ---
 
 ## 15. Application Default Credentials — ADC
-
-L'authentification `gcloud` utilisée par les commandes CLI et l'authentification utilisée automatiquement par les bibliothèques Python sont deux mécanismes à distinguer.
 
 Pour permettre à :
 
@@ -753,14 +704,12 @@ client = bigquery.Client(...)
 
 d'utiliser les credentials appropriés, des **Application Default Credentials (ADC)** sont configurés.
 
-Dans l'environnement utilisé pour le développement, la commande est :
+Dans l'environnement utilisé pour le développement :
 
 ```bash
 gcloud auth application-default login \
   --impersonate-service-account=hubeau-pipeline@project-3665c0d5-5952-473b-82e.iam.gserviceaccount.com
 ```
-
-Après authentification, les bibliothèques Google Cloud peuvent récupérer automatiquement ces credentials.
 
 Le client Python peut alors être créé simplement :
 
@@ -774,7 +723,7 @@ client = bigquery.Client(
 
 sans stocker de clé JSON dans le code ou dans GitHub.
 
-> Les fichiers locaux de credentials et les éventuels jetons d'accès ne doivent jamais être ajoutés au repository Git.
+> Les fichiers locaux de credentials, codes de vérification et éventuels jetons d'accès ne doivent jamais être ajoutés au repository Git.
 
 ---
 
@@ -784,12 +733,6 @@ L'accès au dataset peut être contrôlé depuis la CLI :
 
 ```bash
 bq ls --project_id=project-3665c0d5-5952-473b-82e
-```
-
-Le dataset attendu est :
-
-```text
-hubeau_raw
 ```
 
 L'accès depuis Python peut également être vérifié avec :
@@ -820,8 +763,6 @@ Location : europe-west1
 
 ## 17. Déclenchement du pipeline
 
-### 17.1 Choix d'un déclenchement manuel
-
 Le pipeline n'est actuellement pas exécuté automatiquement selon une fréquence horaire ou quotidienne.
 
 Le déclenchement est volontairement **manuel**.
@@ -831,14 +772,8 @@ Ce choix est adapté au contexte du projet :
 - il s'agit d'un projet personnel ;
 - les données n'ont pas besoin d'être rafraîchies en continu ;
 - il permet de maîtriser les exécutions ;
-- il évite de mettre en place une orchestration inutile à ce stade ;
+- il évite une orchestration inutile à ce stade ;
 - il permet de garder une architecture simple tout en conservant un pipeline automatisable.
-
-Le pipeline pourra ultérieurement être orchestré si le besoin évolue.
-
----
-
-### 17.2 Point d'entrée unique
 
 Le point d'entrée est :
 
@@ -852,7 +787,7 @@ Une seule commande permet de lancer l'ensemble de l'ingestion :
 python src/run_ingestion.py
 ```
 
-Cette commande exécute automatiquement :
+Le flux exécuté est :
 
 ```text
 python src/run_ingestion.py
@@ -894,11 +829,6 @@ hubeau_raw.resultats_dis_raw
 
 ```bash
 git clone https://github.com/Hadad-Ahmed-Ali/hubeau-data-pipeline.git
-```
-
-Puis :
-
-```bash
 cd hubeau-data-pipeline
 ```
 
@@ -908,23 +838,17 @@ Si le repository est déjà présent :
 git pull
 ```
 
----
-
 ### 18.2 Installer les dépendances
 
 ```bash
 pip install -r requirements.txt
 ```
 
----
-
 ### 18.3 Configurer le projet GCP
 
 ```bash
 gcloud config set project project-3665c0d5-5952-473b-82e
 ```
-
----
 
 ### 18.4 Configurer l'impersonation
 
@@ -933,26 +857,16 @@ gcloud config set auth/impersonate_service_account \
 hubeau-pipeline@project-3665c0d5-5952-473b-82e.iam.gserviceaccount.com
 ```
 
----
+### 18.5 Configurer les ADC
 
-### 18.5 Configurer les Application Default Credentials
-
-Si les ADC ne sont pas déjà disponibles dans l'environnement :
+Si nécessaire :
 
 ```bash
 gcloud auth application-default login \
   --impersonate-service-account=hubeau-pipeline@project-3665c0d5-5952-473b-82e.iam.gserviceaccount.com
 ```
 
-Le processus demande une authentification Google.
-
-Les codes de vérification, tokens d'accès et credentials générés ne doivent jamais être copiés dans le repository.
-
----
-
 ### 18.6 Lancer le pipeline
-
-Depuis la racine du repository :
 
 ```bash
 python src/run_ingestion.py
@@ -976,11 +890,7 @@ Le nombre de lignes peut évoluer au fil du temps puisque la source Hub'Eau peut
 
 ## 19. Contrôles réalisés dans BigQuery
 
-Après le premier chargement complet, plusieurs contrôles ont été réalisés directement dans BigQuery.
-
 ### 19.1 Contrôle du schéma
-
-Les types importants ont été vérifiés :
 
 ```text
 date_prelevement     TIMESTAMP   NULLABLE
@@ -988,11 +898,7 @@ resultat_numerique   FLOAT       NULLABLE
 reseaux              RECORD      REPEATED
 ```
 
----
-
 ### 19.2 Contrôle du volume et de l'unicité
-
-La requête suivante permet de contrôler la table RAW :
 
 ```sql
 SELECT
@@ -1003,7 +909,7 @@ SELECT
 FROM `project-3665c0d5-5952-473b-82e.hubeau_raw.resultats_dis_raw`;
 ```
 
-Lors de la validation du pipeline, le résultat obtenu était :
+Lors de la validation :
 
 | Indicateur | Valeur |
 |---|---|
@@ -1012,15 +918,9 @@ Lors de la validation du pipeline, le résultat obtenu était :
 | Date minimale | 2016-01-13 11:24:00 UTC |
 | Date maximale | 2026-06-19 10:04:00 UTC |
 
-Ce contrôle a notamment permis de vérifier que le chargement n'avait pas introduit de doublons sur `reference_analyse`.
-
-Ces valeurs correspondent à une exécution donnée et peuvent évoluer lorsque de nouvelles données sont publiées.
-
----
+Ces valeurs correspondent à une exécution donnée et peuvent évoluer.
 
 ### 19.3 Contrôle du champ `reseaux`
-
-Le champ imbriqué a également été testé avec :
 
 ```sql
 SELECT
@@ -1037,8 +937,6 @@ LIMIT 20;
 
 Le résultat confirme que BigQuery conserve correctement les réseaux sous forme imbriquée et permet de les éclater avec `UNNEST()`.
 
-Cette capacité sera utilisée lors de la future modélisation dbt.
-
 ---
 
 ## 20. Tests automatisés Python
@@ -1053,145 +951,9 @@ tests/
 └── test_bigquery_loader.py
 ```
 
-L'objectif est de tester le comportement du pipeline sans dépendre systématiquement :
+Les tests permettent de valider le pipeline sans dépendre systématiquement d'un appel réel à Hub'Eau ou d'une écriture réelle dans BigQuery.
 
-- de la disponibilité de Hub'Eau ;
-- d'une connexion Internet ;
-- d'une connexion réelle à BigQuery ;
-- d'une écriture réelle dans GCP.
-
----
-
-## 21. Tests de l'ingestion Hub'Eau
-
-Le fichier :
-
-```text
-tests/test_hubeau_api.py
-```
-
-contient trois tests principaux.
-
-### 21.1 `test_build_raw_dataframe()`
-
-Ce test vérifie notamment :
-
-- que la fonction retourne un DataFrame pandas ;
-- que les observations sont correctement présentes ;
-- que `code_commune` est conservé ;
-- que `code_parametre` est conservé ;
-- que `date_prelevement` est converti vers un type datetime.
-
----
-
-### 21.2 `test_fetch_hubeau_data()`
-
-Ce test vérifie le comportement de l'extraction sans appeler réellement l'API.
-
-L'appel :
-
-```python
-requests.get(...)
-```
-
-est temporairement remplacé par une réponse simulée avec `monkeypatch`.
-
-Le test ne dépend donc pas de la disponibilité réelle de Hub'Eau.
-
----
-
-### 21.3 `test_fetch_hubeau_data_pagination()`
-
-Ce test simule plusieurs pages API :
-
-```text
-Page 1
-   │
-   ├── observation 1
-   └── next
-          │
-          ▼
-       Page 2
-          │
-          ├── observation 2
-          └── next = None
-```
-
-Il vérifie ensuite que les observations de toutes les pages sont correctement regroupées.
-
----
-
-## 22. Test du chargement BigQuery
-
-Le fichier :
-
-```text
-tests/test_bigquery_loader.py
-```
-
-teste :
-
-```python
-load_to_bigquery()
-```
-
-sans écrire réellement dans BigQuery.
-
-Le vrai client :
-
-```python
-bigquery.Client
-```
-
-est temporairement remplacé par un client simulé.
-
-Le principe est :
-
-```text
-pytest
-   │
-   ▼
-load_to_bigquery()
-   │
-   ▼
-FakeBigQueryClient
-   │
-   ├── FakeLoadJob
-   │
-   └── FakeTable
-   │
-   ▼
-Assertions
-```
-
-Le test vérifie notamment :
-
-- le projet BigQuery utilisé ;
-- la destination de la table ;
-- l'utilisation de `WRITE_TRUNCATE` ;
-- l'attente de la fin du job avec `result()` ;
-- la récupération de la bonne table ;
-- la valeur retournée par le loader.
-
-Aucune écriture réelle n'est effectuée dans BigQuery pendant ce test.
-
----
-
-## 23. Exécution des tests
-
-Depuis la racine du repository :
-
-```bash
-python -m pytest tests/ -v
-```
-
-Lors de la validation de cette version du pipeline :
-
-```text
-4 tests passed
-```
-
-avec :
+### Tests présents
 
 ```text
 test_bigquery_loader.py::test_load_to_bigquery
@@ -1200,98 +962,40 @@ test_hubeau_api.py::test_fetch_hubeau_data
 test_hubeau_api.py::test_fetch_hubeau_data_pagination
 ```
 
+Ils couvrent notamment :
+
+- la création du DataFrame RAW ;
+- la conversion de `date_prelevement` ;
+- les appels API simulés ;
+- la pagination ;
+- la destination BigQuery ;
+- `WRITE_TRUNCATE` ;
+- l'attente de la fin du job BigQuery ;
+- la récupération de la table chargée.
+
+Les dépendances externes sont simulées avec `monkeypatch`.
+
 ---
 
-## 24. Structure actuelle du repository
+## 21. Exécution des tests
 
-À ce stade, la structure principale est :
+Depuis la racine du repository :
 
-```text
-hubeau-data-pipeline/
-│
-├── notebooks/
-│   └── 01_exploration_hubeau.ipynb
-│
-├── src/
-│   ├── ingestion/
-│   │   └── hubeau_api.py
-│   │
-│   ├── loading/
-│   │   └── bigquery_loader.py
-│   │
-│   └── run_ingestion.py
-│
-├── tests/
-│   ├── test_hubeau_api.py
-│   └── test_bigquery_loader.py
-│
-├── docs/
-│   └── pipeline_hubeau.md
-│
-├── requirements.txt
-├── README.md
-└── .gitignore
+```bash
+python -m pytest tests/ -v
 ```
 
-Les responsabilités sont séparées de la manière suivante :
-
-| Élément | Responsabilité |
-|---|---|
-| `notebooks/` | Exploration et compréhension initiale des données |
-| `src/ingestion/` | Extraction Hub'Eau et préparation RAW |
-| `src/loading/` | Chargement des données vers BigQuery |
-| `src/run_ingestion.py` | Orchestration du pipeline d'ingestion |
-| `tests/` | Tests unitaires |
-| `docs/` | Documentation technique |
-| `requirements.txt` | Dépendances Python |
-| `README.md` | Présentation générale et guide de démarrage |
-| `.gitignore` | Fichiers exclus du versionnement |
-
----
-
-## 25. Séparation des responsabilités
-
-Le projet suit volontairement une séparation entre :
+Lors de la validation de cette version :
 
 ```text
-EXPLORATION
-notebooks/
-     │
-     ▼
-INGESTION
-src/ingestion/
-     │
-     ▼
-CHARGEMENT
-src/loading/
-     │
-     ▼
-STOCKAGE RAW
-BigQuery
-     │
-     ▼
-TRANSFORMATION
-dbt
-     │
-     ▼
-ANALYTICS
-BI
+4 tests passed
 ```
-
-Cette organisation permet notamment :
-
-- de ne pas utiliser le notebook comme code de production ;
-- de rendre les fonctions Python réutilisables ;
-- de tester les composants indépendamment ;
-- de conserver une couche RAW proche de la source ;
-- de séparer l'ingestion des transformations métier ;
-- de faciliter l'évolution future du pipeline.
 
 ---
 
-## 26. État actuel de la partie ingestion
+## 22. État de la partie ingestion
 
-La chaîne suivante est désormais opérationnelle :
+La chaîne suivante est opérationnelle et testée :
 
 ```text
 Hub'Eau API
@@ -1328,99 +1032,680 @@ load_to_bigquery()
            resultats_dis_raw
 ```
 
-Le pipeline complet peut être déclenché manuellement avec :
-
-```bash
-python src/run_ingestion.py
-```
-
-La partie **API Hub'Eau → Python → BigQuery RAW** est donc fonctionnelle et testée.
+La partie **API Hub'Eau → Python → BigQuery RAW** est donc terminée dans le périmètre actuel du projet.
 
 ---
 
-# II — Modélisation : BigQuery → dbt
+# II — Modélisation : BigQuery RAW → dbt → Data Warehouse
 
-## 27. Objectif de la couche dbt
+## 23. Objectif de la couche dbt
 
-La prochaine grande étape consiste à transformer les données RAW stockées dans :
+La deuxième grande partie du pipeline utilise **dbt** pour transformer les données RAW stockées dans BigQuery.
+
+La séparation des responsabilités est la suivante :
+
+```text
+Python
+  │
+  └── acquisition et chargement des données
+              │
+              ▼
+        BigQuery RAW
+              │
+              ▼
+             dbt
+              │
+              └── transformations analytiques
+                  et modélisation décisionnelle
+```
+
+dbt est donc responsable de la transformation des données depuis :
 
 ```text
 hubeau_raw.resultats_dis_raw
 ```
 
-avec **dbt**.
+vers différentes couches destinées à préparer les données pour l'analyse et la visualisation.
 
-Contrairement à la couche Python, dbt sera responsable des transformations analytiques et métier.
+---
 
-Le principe cible est :
+## 24. Architecture BigQuery pour dbt
+
+Cinq datasets sont utilisés pour séparer les différentes couches du pipeline :
 
 ```text
-BigQuery RAW
-     │
-     ▼
-    dbt
-     │
-     ├── STG
-     │
-     ├── Intermediate / ODS
-     │
-     └── DIM / FACT
-     │
-     ▼
-BigQuery : Data Warehouse des transformations des données dbt
-     │
-     ▼
+project-3665c0d5-5952-473b-82e
+│
+├── hubeau_raw
+│   └── resultats_dis_raw
+│
+├── hubeau_stg
+│
+├── hubeau_ods
+│
+├── hubeau_dim
+│
+└── hubeau_fact
 ```
 
+Leur rôle est le suivant :
+
+| Dataset | Rôle |
+|---|---|
+| `hubeau_raw` | Données brutes chargées par Python |
+| `hubeau_stg` | Nettoyage et standardisation proche de la source |
+| `hubeau_ods` | Transformations intermédiaires et préparation des entités |
+| `hubeau_dim` | Dimensions du modèle décisionnel |
+| `hubeau_fact` | Tables de faits et mesures analytiques |
+
+Tous ces datasets utilisent la région :
+
+```text
+europe-west1
+```
+
+Cette séparation permet de matérialiser physiquement dans BigQuery les différentes étapes de transformation dbt.
+
 ---
 
-## 28. Principes prévus pour la modélisation
+## 25. Intégration de dbt dans le repository principal
 
-La modélisation devra notamment permettre de :
+Le projet dbt est versionné dans le même repository GitHub que le pipeline Python :
 
-- nettoyer et standardiser les colonnes ;
-- gérer les éventuelles valeurs manquantes ;
-- transformer la structure imbriquée `reseaux` ;
-- séparer les différentes entités métier ;
-- construire des modèles intermédiaires ;
-- créer des dimensions ;
-- créer une ou plusieurs tables de faits ;
-- ajouter des tests de qualité dbt ;
-- documenter les modèles et leurs dépendances.
+```text
+hubeau-data-pipeline
+```
 
-La structure exacte sera définie après analyse de la couche RAW.
+Le projet dbt se trouve dans le sous-répertoire :
+
+```text
+dbt/
+```
+
+Dans dbt Cloud, le paramètre :
+
+```text
+Project subdirectory
+```
+
+est donc configuré avec :
+
+```text
+dbt
+```
+
+dbt Cloud considère ainsi :
+
+```text
+hubeau-data-pipeline/dbt/
+```
+
+comme la racine du projet dbt.
+
+Ce choix permet de conserver dans un repository unique :
+
+```text
+Extraction Python
+        +
+Tests
+        +
+Documentation
+        +
+Modélisation dbt
+```
+
+et donc de présenter l'ensemble du pipeline dans un même projet versionné.
 
 ---
 
-## 29. Modèles dbt
+## 26. Structure du projet dbt
 
-> **Statut : à construire.**
+La structure mise en place est :
 
-Cette section sera complétée progressivement pendant le développement des modèles dbt.
+```text
+dbt/
+│
+├── dbt_project.yml
+│
+├── macros/
+│   └── generate_schema_name.sql
+│
+└── models/
+    ├── sources.yml
+    ├── staging/
+    ├── intermediate/
+    ├── dimensions/
+    └── facts/
+```
 
-Elle documentera notamment :
+Les modèles SQL seront ajoutés progressivement dans les différents dossiers au cours de la modélisation.
+
+---
+
+## 27. Configuration `dbt_project.yml`
+
+Le fichier :
+
+```text
+dbt/dbt_project.yml
+```
+
+configure le projet dbt.
+
+Configuration actuelle :
+
+```yaml
+name: "hubeau_data_pipeline"
+version: "1.0.0"
+config-version: 2
+
+profile: "default"
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+target-path: "target"
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  hubeau_data_pipeline:
+
+    staging:
+      +schema: hubeau_stg
+      +materialized: view
+
+    intermediate:
+      +schema: hubeau_ods
+      +materialized: table
+
+    dimensions:
+      +schema: hubeau_dim
+      +materialized: table
+
+    facts:
+      +schema: hubeau_fact
+      +materialized: table
+```
+
+Cette configuration établit directement la correspondance :
+
+```text
+models/staging/
+      │
+      ▼
+hubeau_stg
+
+models/intermediate/
+      │
+      ▼
+hubeau_ods
+
+models/dimensions/
+      │
+      ▼
+hubeau_dim
+
+models/facts/
+      │
+      ▼
+hubeau_fact
+```
+
+Les modèles de staging seront matérialisés en **vues**.
+
+Les modèles ODS, dimensions et faits seront initialement matérialisés en **tables**.
+
+Ces choix pourront évoluer si les besoins du projet changent.
+
+---
+
+## 28. Gestion des noms de datasets
+
+dbt applique normalement une logique de génération de schéma qui peut combiner le schéma cible de développement et le schéma personnalisé.
+
+Afin d'utiliser directement les datasets :
+
+```text
+hubeau_stg
+hubeau_ods
+hubeau_dim
+hubeau_fact
+```
+
+un macro personnalisé est défini dans :
+
+```text
+dbt/macros/generate_schema_name.sql
+```
+
+Son contenu est :
+
+```sql
+{% macro generate_schema_name(custom_schema_name, node) %}
+
+    {% if custom_schema_name is none %}
+        {{ return(target.schema) }}
+    {% else %}
+        {{ return(custom_schema_name) }}
+    {% endif %}
+
+{% endmacro %}
+```
+
+Ainsi, lorsqu'un modèle possède :
+
+```yaml
++schema: hubeau_stg
+```
+
+dbt utilise directement :
+
+```text
+hubeau_stg
+```
+
+comme dataset cible.
+
+Le dataset personnel de développement :
+
+```text
+dbt_dev
+```
+
+reste utilisé comme schéma par défaut lorsqu'aucun schéma personnalisé n'est défini.
+
+---
+
+## 29. Déclaration de la source RAW
+
+La table RAW est déclarée dans :
+
+```text
+dbt/models/sources.yml
+```
+
+Configuration actuelle :
+
+```yaml
+version: 2
+
+sources:
+  - name: hubeau_raw
+    database: project-3665c0d5-5952-473b-82e
+    schema: hubeau_raw
+
+    tables:
+      - name: resultats_dis_raw
+```
+
+Cette déclaration permet aux modèles dbt de référencer la table RAW avec :
+
+```sql
+{{ source('hubeau_raw', 'resultats_dis_raw') }}
+```
+
+au lieu d'écrire directement son identifiant BigQuery complet.
+
+La correspondance est :
+
+```text
+source('hubeau_raw', 'resultats_dis_raw')
+                    │
+                    ▼
+project-3665c0d5-5952-473b-82e
+                    │
+                    ▼
+hubeau_raw
+                    │
+                    ▼
+resultats_dis_raw
+```
+
+Le fichier `sources.yml` est placé directement sous :
 
 ```text
 models/
-└── hubeau/
-    ├── staging/
-    ├── intermediate/
-    └── marts/
 ```
 
-Pour chaque modèle, la documentation précisera :
-
-- son objectif ;
-- sa source ;
-- son grain ;
-- ses transformations principales ;
-- ses clés ;
-- ses relations avec les autres modèles ;
-- les tests associés.
+afin de matérialiser clairement la frontière entre la source RAW et les modèles de transformation.
 
 ---
 
-## 30. Traitement futur de `reseaux`
+## 30. Connexion dbt Cloud → GitHub
+
+Le projet dbt Cloud est connecté au repository :
+
+```text
+Hadad-Ahmed-Ali/hubeau-data-pipeline
+```
+
+Le sous-répertoire configuré est :
+
+```text
+dbt
+```
+
+Le flux de versionnement est donc :
+
+```text
+GitHub
+hubeau-data-pipeline
+        │
+        ▼
+dbt Cloud / Studio
+        │
+        ▼
+dbt/
+```
+
+Lorsqu'une modification est effectuée directement sur GitHub, dbt Studio permet de récupérer la dernière version du repository avec :
+
+```text
+Pull from remote
+```
+
+Cette opération joue le rôle d'une synchronisation avec les changements présents sur le repository distant.
+
+---
+
+## 31. Connexion dbt Cloud → BigQuery
+
+dbt Cloud est connecté au projet :
+
+```text
+project-3665c0d5-5952-473b-82e
+```
+
+avec :
+
+```text
+Location : europe-west1
+```
+
+L'environnement de développement utilise notamment :
+
+```text
+Dataset     : dbt_dev
+Target name : default
+Threads     : 3
+```
+
+La connexion dbt et l'ingestion Python utilisent des mécanismes d'authentification distincts.
+
+Le compte de service utilisé pour l'ingestion Python reste :
+
+```text
+hubeau-pipeline@project-3665c0d5-5952-473b-82e.iam.gserviceaccount.com
+```
+
+dbt Cloud utilise quant à lui le compte de service configuré dans sa connexion BigQuery.
+
+Cette séparation permet de distinguer :
+
+```text
+Python
+   │
+   └── écrit dans hubeau_raw
+
+dbt
+   │
+   ├── lit hubeau_raw
+   └── construit les couches STG / ODS / DIM / FACT
+```
+
+---
+
+## 32. Permissions BigQuery de dbt
+
+Le compte de service utilisé par dbt dispose des permissions nécessaires au fonctionnement du pipeline de transformation.
+
+Au niveau du projet GCP :
+
+```text
+BigQuery Job User
+BigQuery Read Session User
+```
+
+Le rôle :
+
+```text
+BigQuery Job User
+```
+
+permet notamment à dbt d'exécuter des jobs BigQuery.
+
+Le rôle :
+
+```text
+BigQuery Read Session User
+```
+
+est nécessaire à l'environnement dbt Fusion utilisé par dbt Studio pour accéder à BigQuery via la BigQuery Storage API.
+
+Les permissions sur les datasets suivent le principe du moindre privilège :
+
+```text
+hubeau_raw
+└── BigQuery Data Viewer
+
+hubeau_stg
+└── BigQuery Data Editor
+
+hubeau_ods
+└── BigQuery Data Editor
+
+hubeau_dim
+└── BigQuery Data Editor
+
+hubeau_fact
+└── BigQuery Data Editor
+```
+
+Ainsi :
+
+- dbt peut lire les données RAW ;
+- dbt n'a pas besoin de modifier la couche RAW ;
+- dbt peut créer et mettre à jour ses modèles dans les datasets de transformation.
+
+Cette séparation protège la frontière entre ingestion et transformation.
+
+---
+
+## 33. Validation de la connexion dbt → BigQuery
+
+La connexion a été vérifiée dans dbt Studio avec :
+
+```bash
+dbt debug
+```
+
+La configuration reconnue par dbt est notamment :
+
+```text
+database : project-3665c0d5-5952-473b-82e
+schema   : dbt_dev
+priority : interactive
+method   : service-account-json
+location : europe-west1
+```
+
+Lors du premier test, la connexion échouait car dbt Fusion nécessitait le rôle :
+
+```text
+BigQuery Read Session User
+```
+
+Après ajout de ce rôle au compte de service dbt, le test a abouti :
+
+```text
+connection test: OK
+All checks passed!
+```
+
+Cette validation confirme que dbt Studio peut communiquer correctement avec BigQuery.
+
+---
+
+## 34. Validation du projet dbt
+
+Après déclaration de la source RAW, le projet a été vérifié avec :
+
+```bash
+dbt parse
+```
+
+Le parsing s'est terminé sans erreur.
+
+Un avertissement :
+
+```text
+UnusedResourceConfigPath
+```
+
+est actuellement présent pour :
+
+```text
+models.hubeau_data_pipeline.staging
+models.hubeau_data_pipeline.intermediate
+models.hubeau_data_pipeline.dimensions
+models.hubeau_data_pipeline.facts
+```
+
+Cet avertissement est attendu à ce stade.
+
+Les quatre chemins sont déjà configurés dans :
+
+```text
+dbt_project.yml
+```
+
+mais aucun modèle SQL n'a encore été créé dans ces dossiers.
+
+Ils seront progressivement utilisés lors de la construction des modèles.
+
+---
+
+## 35. Architecture de transformation cible
+
+L'architecture dbt retenue est :
+
+```text
+hubeau_raw.resultats_dis_raw
+              │
+              ▼
+          STAGING
+              │
+              ▼
+        hubeau_stg
+              │
+              ▼
+      INTERMEDIATE / ODS
+              │
+              ▼
+        hubeau_ods
+              │
+              ▼
+     MODÈLE DÉCISIONNEL
+          │       │
+          ▼       ▼
+    hubeau_dim  hubeau_fact
+          │       │
+          └───┬───┘
+              ▼
+          Analytics
+```
+
+### STG
+
+La couche staging sera destinée aux transformations simples et proches de la source, par exemple :
+
+- sélection des colonnes utiles ;
+- renommage et standardisation ;
+- contrôle ou harmonisation des types ;
+- normalisation simple de certaines valeurs.
+
+La logique métier complexe n'a pas vocation à être placée dans cette couche.
+
+### Intermediate / ODS
+
+La couche intermédiaire permettra de :
+
+- restructurer les données ;
+- préparer les entités métier ;
+- gérer certaines transformations plus complexes ;
+- préparer les données nécessaires au modèle décisionnel.
+
+### DIM
+
+Les dimensions permettront de représenter les axes d'analyse retenus après étude des données.
+
+### FACT
+
+Les tables de faits porteront les mesures et événements nécessaires aux analyses et futurs KPI.
+
+Le grain précis des modèles DIM et FACT n'est volontairement pas défini avant l'analyse détaillée des données RAW.
+
+---
+
+## 36. Prochaine étape : conception de la modélisation
+
+L'infrastructure dbt est maintenant opérationnelle.
+
+La prochaine étape ne consiste plus à configurer les connexions, mais à **concevoir les modèles de données**.
+
+Le travail commencera par l'analyse des 32 champs de :
+
+```text
+hubeau_raw.resultats_dis_raw
+```
+
+afin de déterminer notamment :
+
+1. le grain des données ;
+2. les colonnes pertinentes pour l'analyse ;
+3. les éventuels renommages ou standardisations ;
+4. le rôle de chaque champ ;
+5. le traitement du champ imbriqué `reseaux` ;
+6. les entités pouvant devenir des dimensions ;
+7. les mesures pouvant alimenter une table de faits ;
+8. les futurs besoins en KPI et datavisualisation.
+
+La conception suivra donc le principe :
+
+```text
+Compréhension de la donnée RAW
+          │
+          ▼
+Définition du grain
+          │
+          ▼
+Conception STG
+          │
+          ▼
+Conception ODS
+          │
+          ▼
+Conception DIM / FACT
+          │
+          ▼
+Définition des KPI
+          │
+          ▼
+Datavisualisation
+```
+
+Cette réflexion sera réalisée avant l'écriture des modèles SQL afin que la structure décisionnelle soit guidée par les futurs usages analytiques plutôt que par une simple reproduction de la source.
+
+---
+
+## 37. Traitement futur de `reseaux`
 
 La structure :
 
@@ -1428,43 +1713,43 @@ La structure :
 reseaux RECORD REPEATED
 ```
 
-est volontairement conservée dans la RAW.
+reste volontairement conservée dans la RAW.
 
-La stratégie de transformation sera définie dans dbt.
-
-Une piste naturelle consistera à exploiter :
+Une piste naturelle consiste à utiliser :
 
 ```sql
 UNNEST(reseaux)
 ```
 
-afin de construire un modèle spécifique permettant de représenter correctement la relation entre les analyses et les réseaux.
+pour représenter les relations entre analyses et réseaux.
 
-Le choix définitif sera documenté lors de l'implémentation.
+Cependant, le modèle définitif n'est pas encore arrêté.
+
+Le traitement sera choisi après analyse du grain des données et des besoins analytiques afin d'éviter de modifier involontairement le niveau de granularité des analyses.
 
 ---
 
-## 31. Tests dbt
+## 38. Tests dbt
 
-> **Statut : à construire.**
+> **Statut : à construire avec les modèles.**
 
-Les tests dbt pourront notamment couvrir :
+Les tests pourront notamment couvrir :
 
 - `not_null` ;
 - `unique` ;
 - `relationships` ;
-- `accepted_values` lorsque cela est pertinent ;
-- des tests métier spécifiques si nécessaire.
+- `accepted_values` lorsque pertinent ;
+- des tests métier spécifiques.
 
-Les tests réellement implémentés seront documentés dans cette section au fur et à mesure du développement.
+Les tests seront définis en fonction du grain et des contraintes réelles de chaque modèle.
 
 ---
 
 # III — Analytics : dbt → Visualisation
 
-## 32. Objectif
+## 39. Objectif
 
-La dernière partie du projet consistera à exploiter les modèles analytiques construits avec dbt dans un outil de visualisation.
+La dernière partie du projet consistera à exploiter les modèles décisionnels construits avec dbt dans un outil de visualisation.
 
 L'architecture cible est :
 
@@ -1475,29 +1760,34 @@ API Hub'Eau
 Python
       │
       ▼
-BigQuery RAW
+BigQuery
       │
       ▼
 dbt
       │
-      ▼
-DIM / FACT
-      │
-      ▼
-Visualisation / BI
+      ├── STG
+      ├── ODS
+      ├── DIM
+      └── FACT
+            │
+            ▼
+      Visualisation / BI
 ```
 
 ---
 
-## 33. Indicateurs et visualisations
+## 40. KPI et visualisations
 
-> **Statut : à définir.**
+> **Statut : à définir après conception du modèle décisionnel.**
 
-Les KPI et visualisations seront définis une fois la modélisation analytique stabilisée.
+Les KPI ne seront pas définis indépendamment de la modélisation.
 
-Cette section documentera notamment :
+La réflexion sur STG, ODS, DIM et FACT devra permettre de préparer les colonnes et les grains nécessaires à leur calcul.
+
+Cette section documentera progressivement :
 
 - les indicateurs retenus ;
+- leur définition métier ;
 - leurs règles de calcul ;
 - les tables utilisées ;
 - les dimensions d'analyse ;
@@ -1505,7 +1795,71 @@ Cette section documentera notamment :
 
 ---
 
-# IV — Roadmap technique
+# IV — Structure actuelle du repository
+
+La structure principale du repository est désormais :
+
+```text
+hubeau-data-pipeline/
+│
+├── notebooks/
+│   └── 01_exploration_hubeau.ipynb
+│
+├── src/
+│   ├── ingestion/
+│   │   └── hubeau_api.py
+│   │
+│   ├── loading/
+│   │   └── bigquery_loader.py
+│   │
+│   └── run_ingestion.py
+│
+├── tests/
+│   ├── test_hubeau_api.py
+│   └── test_bigquery_loader.py
+│
+├── dbt/
+│   ├── dbt_project.yml
+│   │
+│   ├── macros/
+│   │   └── generate_schema_name.sql
+│   │
+│   └── models/
+│       ├── sources.yml
+│       ├── staging/
+│       ├── intermediate/
+│       ├── dimensions/
+│       └── facts/
+│
+├── docs/
+│   └── pipeline_hubeau.md
+│
+├── requirements.txt
+├── README.md
+└── .gitignore
+```
+
+Les responsabilités sont séparées ainsi :
+
+| Élément | Responsabilité |
+|---|---|
+| `notebooks/` | Exploration et compréhension initiale des données |
+| `src/ingestion/` | Extraction Hub'Eau et préparation RAW |
+| `src/loading/` | Chargement vers BigQuery |
+| `src/run_ingestion.py` | Point d'entrée du pipeline d'ingestion |
+| `tests/` | Tests automatisés Python |
+| `dbt/models/sources.yml` | Déclaration des sources RAW |
+| `dbt/models/staging/` | Modèles STG |
+| `dbt/models/intermediate/` | Modèles intermédiaires / ODS |
+| `dbt/models/dimensions/` | Dimensions |
+| `dbt/models/facts/` | Tables de faits |
+| `dbt/macros/` | Macros dbt personnalisées |
+| `docs/` | Documentation technique |
+| `README.md` | Présentation générale du projet |
+
+---
+
+# V — Roadmap technique
 
 ## Phase 1 — Exploration et ingestion Python
 
@@ -1522,7 +1876,7 @@ Cette section documentera notamment :
 
 ---
 
-## Phase 2 — BigQuery RAW
+## Phase 2 — BigQuery
 
 - [x] Créer le dataset `hubeau_raw`
 - [x] Définir un schéma BigQuery explicite
@@ -1543,33 +1897,56 @@ Cette section documentera notamment :
 
 ---
 
-## Phase 3 — dbt
+## Phase 3 — Infrastructure dbt
 
-- [ ] Déclarer la source `hubeau_raw.resultats_dis_raw`
-- [ ] Définir l'architecture des modèles Hub'Eau
-- [ ] Construire les modèles de staging
-- [ ] Construire les modèles intermédiaires / ODS
-- [ ] Définir le traitement de `reseaux`
-- [ ] Concevoir les dimensions
-- [ ] Concevoir les tables de faits
-- [ ] Ajouter les tests dbt
-- [ ] Documenter les modèles dbt
-- [ ] Valider la lineage dbt
+- [x] Intégrer le projet dbt au repository `hubeau-data-pipeline`
+- [x] Configurer `dbt/` comme sous-répertoire du projet dbt Cloud
+- [x] Créer le dataset `hubeau_stg`
+- [x] Créer le dataset `hubeau_ods`
+- [x] Créer le dataset `hubeau_dim`
+- [x] Créer le dataset `hubeau_fact`
+- [x] Configurer `dbt_project.yml`
+- [x] Configurer `generate_schema_name.sql`
+- [x] Connecter dbt Cloud au projet BigQuery Hub'Eau
+- [x] Configurer les permissions IAM nécessaires à dbt
+- [x] Configurer les credentials de développement
+- [x] Valider la connexion avec `dbt debug`
+- [x] Déclarer `hubeau_raw.resultats_dis_raw` dans `sources.yml`
+- [x] Valider le projet avec `dbt parse`
 
 ---
 
-## Phase 4 — Analytics / BI
+## Phase 4 — Modélisation dbt
 
-- [ ] Définir les KPI
+- [ ] Analyser le grain et les 32 colonnes RAW
+- [ ] Concevoir la couche staging
+- [ ] Construire les modèles STG
+- [ ] Concevoir la couche intermédiaire / ODS
+- [ ] Construire les modèles ODS
+- [ ] Définir le traitement de `reseaux`
+- [ ] Identifier les dimensions analytiques
+- [ ] Concevoir les dimensions
+- [ ] Identifier les mesures et événements
+- [ ] Concevoir la ou les tables de faits
+- [ ] Ajouter les tests dbt
+- [ ] Documenter les modèles
+- [ ] Valider les dépendances et la lineage dbt
+
+---
+
+## Phase 5 — Analytics / BI
+
+- [ ] Définir les KPI à partir du modèle décisionnel
+- [ ] Définir les dimensions d'analyse
 - [ ] Choisir / connecter l'outil de visualisation
 - [ ] Construire les tableaux de bord
 - [ ] Documenter les indicateurs
 
 ---
 
-# V — Principes techniques du projet
+# VI — Principes techniques du projet
 
-Le projet est construit autour de plusieurs principes Data Engineering :
+Le projet est construit autour de plusieurs principes Data Engineering.
 
 1. **Séparer exploration et code de production**
 
@@ -1585,85 +1962,132 @@ Le projet est construit autour de plusieurs principes Data Engineering :
 
 4. **Séparer ingestion et transformation**
 
-   Python est responsable de l'acquisition et du chargement ; dbt sera responsable de la transformation analytique.
+   Python est responsable de l'acquisition et du chargement ; dbt est responsable des transformations analytiques.
 
-5. **Utiliser un schéma de stockage explicite**
+5. **Séparer physiquement les couches de données**
 
-   Les types BigQuery sont définis dans le code du loader.
+   RAW, STG, ODS, DIM et FACT disposent de datasets BigQuery distincts.
 
-6. **Tester les composants indépendamment**
+6. **Utiliser un schéma de stockage explicite**
 
-   Les appels HTTP et BigQuery sont simulés dans les tests unitaires.
+   Les types BigQuery RAW sont définis dans le code du loader.
 
-7. **Éviter les secrets permanents dans Git**
+7. **Appliquer le principe du moindre privilège**
 
-   L'accès GCP utilise l'impersonation et les Application Default Credentials plutôt qu'une clé JSON stockée dans le projet.
+   dbt dispose d'un accès en lecture à la RAW et d'un accès en écriture aux datasets qu'il doit construire.
 
-8. **Maîtriser le déclenchement du pipeline**
+8. **Tester les composants indépendamment**
 
-   Le rafraîchissement est actuellement manuel et réalisé uniquement lorsque nécessaire.
+   Les appels HTTP et BigQuery sont simulés dans les tests Python.
 
-9. **Versionner le code et la documentation**
+9. **Éviter les secrets permanents dans Git**
 
-   Les évolutions du pipeline sont suivies dans Git / GitHub.
+   Aucun secret nécessaire à l'ingestion Python n'est versionné dans le repository.
 
-10. **Documenter les choix techniques**
+10. **Maîtriser le déclenchement du pipeline**
+
+    Le rafraîchissement de la RAW est actuellement manuel et réalisé uniquement lorsque nécessaire.
+
+11. **Centraliser le projet dans un repository**
+
+    Python, tests, dbt et documentation sont versionnés dans `hubeau-data-pipeline`.
+
+12. **Concevoir avant de transformer**
+
+    Le grain, les entités, les dimensions, les faits et les futurs KPI sont réfléchis avant l'écriture des modèles SQL.
+
+13. **Documenter les choix techniques**
 
     La documentation évolue avec le pipeline afin de refléter l'architecture réellement implémentée.
 
 ---
 
-# VI — État actuel du pipeline
+# VII — État actuel du pipeline
 
-À ce stade, la première grande brique du projet est terminée :
+Deux grandes étapes techniques sont désormais terminées :
 
 ```text
-                         TERMINÉ
-                            │
-                            ▼
-┌─────────────────────────────────────────────────────┐
-│                                                     │
-│  API Hub'Eau                                        │
-│       │                                             │
-│       ▼                                             │
-│  Extraction Python                                  │
-│       │                                             │
-│       ▼                                             │
-│  Pagination                                         │
-│       │                                             │
-│       ▼                                             │
-│  DataFrame RAW                                      │
-│       │                                             │
-│       ▼                                             │
-│  Schéma BigQuery explicite                          │
-│       │                                             │
-│       ▼                                             │
-│  Chargement WRITE_TRUNCATE                          │
-│       │                                             │
-│       ▼                                             │
-│  hubeau_raw.resultats_dis_raw                       │
-│                                                     │
-└─────────────────────────────────────────────────────┘
-                            │
-                            ▼
+┌────────────────────────────────────────────────────────────┐
+│                    INGESTION — TERMINÉE                    │
+│                                                            │
+│  API Hub'Eau                                               │
+│       │                                                    │
+│       ▼                                                    │
+│  Extraction Python                                         │
+│       │                                                    │
+│       ▼                                                    │
+│  Pagination                                                │
+│       │                                                    │
+│       ▼                                                    │
+│  DataFrame RAW                                             │
+│       │                                                    │
+│       ▼                                                    │
+│  Schéma BigQuery explicite                                 │
+│       │                                                    │
+│       ▼                                                    │
+│  WRITE_TRUNCATE                                            │
+│       │                                                    │
+│       ▼                                                    │
+│  hubeau_raw.resultats_dis_raw                              │
+└────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌────────────────────────────────────────────────────────────┐
+│               INFRASTRUCTURE DBT — TERMINÉE                │
+│                                                            │
+│  GitHub hubeau-data-pipeline                               │
+│       │                                                    │
+│       ▼                                                    │
+│  dbt Cloud / Studio                                        │
+│       │                                                    │
+│       ├── dbt_project.yml                                  │
+│       ├── generate_schema_name.sql                         │
+│       ├── sources.yml                                      │
+│       ├── dbt debug : OK                                   │
+│       └── dbt parse : OK                                   │
+│                                                            │
+│  BigQuery                                                  │
+│       ├── hubeau_stg                                       │
+│       ├── hubeau_ods                                       │
+│       ├── hubeau_dim                                       │
+│       └── hubeau_fact                                      │
+└────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
                        PROCHAINE ÉTAPE
-                            │
-                            ▼
-                           dbt
-                            │
-                  ┌─────────┼─────────┐
-                  ▼         ▼         ▼
-                 STG   Intermediate  Marts
-                                      │
-                                      ▼
-                                  DIM / FACT
-                                      │
-                                      ▼
-                                Visualisation
+                              │
+                              ▼
+                  MODÉLISATION DÉCISIONNELLE
+                              │
+                    ┌─────────┼─────────┐
+                    ▼         ▼         ▼
+                   STG       ODS    DIM / FACT
+                                        │
+                                        ▼
+                                      KPI
+                                        │
+                                        ▼
+                                 Visualisation
 ```
 
-La prochaine étape du projet consiste donc à démarrer la modélisation des données Hub'Eau avec **dbt**, en prenant comme source la table RAW :
+Le pipeline dispose donc désormais d'une chaîne technique fonctionnelle :
+
+```text
+Hub'Eau
+   ↓
+Python
+   ↓
+BigQuery
+   ↓
+dbt
+```
+
+La prochaine étape consiste à transformer cette infrastructure en **modèle décisionnel exploitable**.
+
+Le travail reprendra par l'analyse détaillée de :
 
 ```text
 project-3665c0d5-5952-473b-82e.hubeau_raw.resultats_dis_raw
 ```
+
+afin de concevoir les couches STG, ODS, DIM et FACT en tenant compte dès le départ des futurs besoins en KPI et datavisualisation.
