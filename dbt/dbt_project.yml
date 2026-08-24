@@ -1,0 +1,37 @@
+name: "hubeau_data_pipeline"
+version: "1.0.0"
+config-version: 2
+
+profile: "default"
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+target-path: "target"
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  hubeau_data_pipeline:
+
+    staging:
+      +schema: hubeau_stg
+      +materialized: view
+
+    intermediate:
+      +schema: hubeau_ods
+      +materialized: table
+
+    dimensions:
+      +schema: hubeau_dim
+      +materialized: table
+
+    facts:
+      +schema: hubeau_fact
+      +materialized: table
