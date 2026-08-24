@@ -8,7 +8,7 @@ En début de carrière et actuellement en recherche d'emploi dans le domaine de 
 
 # Hub'Eau Data Pipeline
 
-> **Projet en cours de développement**  
+**Projet en cours de développement**  
 > La chaîne **API Hub'Eau → Python → BigQuery RAW → dbt Cloud** est opérationnelle et validée.  
 > La prochaine étape est la construction des modèles SQL décisionnels **STG → ODS → DIM / FACT**, puis la définition des KPI et la datavisualisation.
 
