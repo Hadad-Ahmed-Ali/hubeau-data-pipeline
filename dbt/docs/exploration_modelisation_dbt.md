@@ -1,4 +1,4 @@
-# Exploration préalable à la modélisation dbt — Hub'Eau
+# Exploration préalable à la modélisation Hub'Eau
 
 ## 1. Objectif
 
@@ -60,6 +60,20 @@ La table contient actuellement :
 311 lignes
 32 champs
 ```
+On peut déjà organiser les 32 champs en grands groupes :
+
+| Groupe                | Colonnes principales                                                                                     | Rôle potentiel                         |
+| --------------------- | -------------------------------------------------------------------------------------------------------- | -------------------------------------- |
+| Géographie            | `code_departement`, `nom_departement`, `code_commune`, `nom_commune`                                     | axes géographiques                     |
+| Prélèvement / analyse | `code_prelevement`, `reference_analyse`, `date_prelevement`, `code_lieu_analyse`                         | identification de l'événement analysé  |
+| Paramètre             | `code_parametre`, `code_parametre_se`, `code_parametre_cas`, `libelle_parametre*`, `code_type_parametre` | substance/paramètre mesuré             |
+| Résultat              | `resultat_numerique`, `resultat_alphanumerique`, `code_unite`, `libelle_unite`                           | mesure                                 |
+| Seuils qualité        | `limite_qualite_parametre`, `reference_qualite_parametre`                                                | comparaison/interprétation du résultat |
+| Conformité            | `conclusion_conformite_prelevement`, les 4 champs `conformite_*`                                         | qualité/conformité                     |
+| Acteurs               | `nom_uge`, `nom_distributeur`, `nom_moa`                                                                 | organisation / gestion                 |
+| Installation          | `code_installation_amont`, `nom_installation_amont`                                                      | infrastructure                         |
+| Réseaux               | `reseaux`                                                                                                | relation imbriquée potentiellement 1→N |
+
 
 Le volume peut évoluer lors des prochaines exécutions du pipeline.
 
