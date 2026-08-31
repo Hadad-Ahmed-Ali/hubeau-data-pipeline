@@ -1,0 +1,214 @@
+version: 2
+
+models:
+  - name: stg_resultats_dis
+    description: >
+      Modèle de staging des résultats du contrôle sanitaire de l'eau potable
+      issus de l'API Hub'Eau. Le modèle conserve le grain et les 32 champs
+      de la source RAW. Les transformations métier, notamment l'interprétation
+      des résultats censurés, le parsing des limites de qualité et
+      l'éclatement des réseaux, sont volontairement reportées à la couche ODS.
+
+    columns:
+
+      # -----------------------------------------------------------------------
+      # Géographie
+      # -----------------------------------------------------------------------
+
+      - name: code_departement
+        description: >
+          Code du département associé au prélèvement. Conservé en STRING
+          car il s'agit d'un identifiant géographique et non d'une mesure.
+
+      - name: nom_departement
+        description: "Nom du département associé au prélèvement."
+
+      - name: code_commune
+        description: >
+          Code de la commune associée au prélèvement. Candidat à
+          l'identification métier de la commune dans le futur modèle
+          décisionnel.
+
+      - name: nom_commune
+        description: "Nom de la commune associée au prélèvement."
+
+      # -----------------------------------------------------------------------
+      # Prélèvement / analyse
+      # -----------------------------------------------------------------------
+
+      - name: code_prelevement
+        description: >
+          Identifiant du prélèvement fourni par Hub'Eau. Il est unique
+          dans le périmètre actuel limité aux nitrates, mais aucune contrainte
+          d'unicité n'est définie ici afin de ne pas supposer qu'il restera
+          unique lors d'une future extraction multi-paramètres.
+        data_tests:
+          - not_null
+
+      - name: reference_analyse
+        description: >
+          Référence de l'analyse associée au résultat. Conservée séparément
+          du code de prélèvement afin de préserver la sémantique de la source.
+        data_tests:
+          - not_null
+
+      - name: date_prelevement
+        description: >
+          Date et heure du prélèvement. Le TIMESTAMP source est conservé
+          sans création d'attributs calendaires dans la couche staging.
+        data_tests:
+          - not_null
+
+      - name: code_lieu_analyse
+        description: "Code du lieu d'analyse fourni par la source."
+
+      # -----------------------------------------------------------------------
+      # Paramètre
+      # -----------------------------------------------------------------------
+
+      - name: code_parametre
+        description: >
+          Code du paramètre analysé. Le périmètre actuel contient uniquement
+          les nitrates, mais le modèle est conçu pour permettre l'intégration
+          future d'autres paramètres.
+        data_tests:
+          - not_null
+
+      - name: code_parametre_se
+        description: "Code SE associé au paramètre."
+
+      - name: code_parametre_cas
+        description: >
+          Code CAS associé au paramètre lorsqu'il est fourni par la source.
+          Les valeurs absentes sont volontairement conservées à NULL.
+
+      - name: libelle_parametre
+        description: "Libellé du paramètre analysé."
+
+      - name: libelle_parametre_maj
+        description: "Libellé du paramètre dans sa représentation en majuscules."
+
+      - name: libelle_parametre_web
+        description: >
+          Libellé web du paramètre. Ce champ est actuellement entièrement
+          absent sur le périmètre étudié mais reste conservé en staging
+          pour respecter le contrat de la source.
+
+      - name: code_type_parametre
+        description: "Code du type de paramètre fourni par Hub'Eau."
+
+      # -----------------------------------------------------------------------
+      # Résultat / unité
+      # -----------------------------------------------------------------------
+
+      - name: resultat_alphanumerique
+        description: >
+          Représentation alphanumérique du résultat. Ce champ est conservé
+          car il porte une information qui peut être perdue dans la valeur
+          numérique, notamment pour les résultats censurés tels que '<0,5'.
+        data_tests:
+          - not_null
+
+      - name: resultat_numerique
+        description: >
+          Représentation numérique du résultat fournie par la source.
+          Une valeur numérique égale à 0 ne doit pas être interprétée
+          automatiquement comme une concentration réellement nulle lorsque
+          le résultat alphanumérique indique une valeur censurée.
+        data_tests:
+          - not_null
+
+      - name: code_unite
+        description: "Code de l'unité associée au résultat."
+
+      - name: libelle_unite
+        description: >
+          Libellé de l'unité associée au résultat. Le périmètre nitrate
+          actuel utilise mg/L.
+
+      # -----------------------------------------------------------------------
+      # Limites / références qualité
+      # -----------------------------------------------------------------------
+
+      - name: limite_qualite_parametre
+        description: >
+          Limite de qualité du paramètre sous sa représentation source,
+          par exemple '<=50 mg/L'. Son parsing en opérateur, valeur numérique
+          et unité est volontairement reporté à la couche ODS.
+
+      - name: reference_qualite_parametre
+        description: >
+          Référence de qualité du paramètre lorsqu'elle est fournie.
+          Le champ est actuellement vide sur le périmètre étudié mais
+          reste conservé en staging.
+
+      # -----------------------------------------------------------------------
+      # Conformité du prélèvement
+      # -----------------------------------------------------------------------
+
+      - name: conclusion_conformite_prelevement
+        description: >
+          Conclusion textuelle de conformité portant sur le prélèvement
+          dans son ensemble. Elle ne doit pas être interprétée comme une
+          conclusion spécifique au paramètre nitrate.
+
+      - name: conformite_limites_bact_prelevement
+        description: >
+          Code de conformité du prélèvement vis-à-vis des limites
+          bactériologiques.
+
+      - name: conformite_limites_pc_prelevement
+        description: >
+          Code de conformité du prélèvement vis-à-vis des limites
+          physico-chimiques.
+
+      - name: conformite_references_bact_prelevement
+        description: >
+          Code de conformité du prélèvement vis-à-vis des références
+          bactériologiques.
+
+      - name: conformite_references_pc_prelevement
+        description: >
+          Code de conformité du prélèvement vis-à-vis des références
+          physico-chimiques.
+
+      # -----------------------------------------------------------------------
+      # Acteurs / installation
+      # -----------------------------------------------------------------------
+
+      - name: nom_uge
+        description: >
+          Nom de l'unité de gestion de l'eau associée au prélèvement.
+          Cette notion reste distincte du distributeur et de la maîtrise
+          d'ouvrage.
+
+      - name: nom_distributeur
+        description: "Nom du distributeur associé au prélèvement."
+
+      - name: nom_moa
+        description: "Nom du maître d'ouvrage associé au prélèvement."
+
+      - name: code_installation_amont
+        description: >
+          Code de l'installation située en amont. Ce code est privilégié
+          comme identifiant métier potentiel par rapport au libellé, qui
+          peut évoluer dans le temps.
+        data_tests:
+          - not_null
+
+      - name: nom_installation_amont
+        description: >
+          Nom de l'installation amont. Plusieurs libellés peuvent être
+          observés dans le temps pour un même code d'installation.
+
+      # -----------------------------------------------------------------------
+      # Réseaux
+      # -----------------------------------------------------------------------
+
+      - name: reseaux
+        description: >
+          Tableau de structures contenant les réseaux associés au résultat,
+          avec notamment leur code, leur nom et leur débit. Le champ reste
+          sous forme ARRAY<STRUCT> dans le modèle principal de staging afin
+          de préserver le grain des résultats. Son UNNEST et la gestion des
+          doublons seront réalisés dans un modèle séparé en couche ODS.
