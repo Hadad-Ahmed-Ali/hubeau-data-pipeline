@@ -2,7 +2,8 @@
 
 **Hadad Ahmed**
 
-En début de carrière et actuellement en recherche d'emploi dans le domaine de la Data, je développe ce projet personnel de Data Analytics Engineering autour des données publiques sur la qualité de l'eau potable issues de l'API Hub'Eau.
+En début de carrière et actuellement en recherche d'emploi dans le domaine de la Data, je développe une architecture orientée Data Analytics Engineering sur les données de l'API publique Hub'Eau relatives à la qualité de l'eau potable : extraction via API, ingestion avec Python, stockage BigQuery et mise en œuvre progressive de la modélisation dbt, des tests, de la documentation et de la visualisation Power BI.
+
 
 ---
 
