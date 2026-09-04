@@ -11,7 +11,9 @@ En début de carrière et actuellement en recherche d'emploi dans le domaine de 
 
 **Projet en cours de développement**  
 > La chaîne **API Hub'Eau → Python → BigQuery RAW → dbt Cloud** est opérationnelle et validée.  
-> La prochaine étape est la construction des modèles SQL décisionnels **STG → ODS → DIM / FACT**, puis la définition des KPI et la datavisualisation.
+> La construction des modèles SQL décisionnels **STG → ODS, tests et documentations de ces modèles** est opérationnelle et validée.
+> La prochaine étape est la construction des modèles SQL décisionnels **DIM / FACT**, puis la définition des KPI et la datavisualisation.
+
 
 Pipeline de données construit à partir de l'API publique **Hub'Eau - Qualité de l'eau potable**, avec une architecture orientée Data Engineering :
 
