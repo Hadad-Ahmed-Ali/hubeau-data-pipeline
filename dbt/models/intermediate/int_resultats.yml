@@ -1,0 +1,152 @@
+version: 2
+
+models:
+  - name: int_resultats
+    description: >
+      Modèle intermédiaire contenant les résultats d'analyse des paramètres
+      mesurés lors des prélèvements d'eau potable.
+      Le grain du modèle est d'une ligne par résultat d'analyse d'un paramètre
+      donné pour un prélèvement.
+      Le modèle conserve les représentations source des résultats et des limites
+      de qualité, tout en ajoutant des champs structurés permettant d'exploiter
+      les opérateurs, seuils et unités dans les couches décisionnelles suivantes.
+
+    columns:
+
+      # -----------------------------------------------------------------------
+      # Identifiants
+      # -----------------------------------------------------------------------
+
+      - name: code_prelevement
+        description: >
+          Identifiant du prélèvement auquel le résultat d'analyse est rattaché.
+          Plusieurs résultats de paramètres peuvent être associés à un même
+          code_prelevement.
+        data_tests:
+          - not_null
+
+      - name: reference_analyse
+        description: >
+          Référence de l'analyse associée au résultat.
+        data_tests:
+          - not_null
+
+      # -----------------------------------------------------------------------
+      # Paramètre analysé
+      # -----------------------------------------------------------------------
+
+      - name: code_parametre
+        description: >
+          Code du paramètre analysé.
+        data_tests:
+          - not_null
+
+      - name: code_parametre_se
+        description: >
+          Code du paramètre issu du référentiel SANDRE associé au résultat.
+
+      - name: code_parametre_cas
+        description: >
+          Code CAS du paramètre lorsqu'il est disponible.
+          Cette information peut être absente selon le paramètre analysé.
+
+      - name: code_type_parametre
+        description: >
+          Code décrivant le type du paramètre analysé.
+
+      - name: libelle_parametre
+        description: >
+          Libellé du paramètre fourni par la source Hub'Eau.
+
+      - name: libelle_parametre_maj
+        description: >
+          Variante en majuscules du libellé du paramètre fournie par la source.
+
+      - name: libelle_parametre_web
+        description: >
+          Libellé destiné à l'affichage web lorsqu'il est fourni par la source.
+          Cette colonne peut être NULL selon le paramètre.
+
+      # -----------------------------------------------------------------------
+      # Résultat source
+      # -----------------------------------------------------------------------
+
+      - name: resultat_alphanumerique
+        description: >
+          Représentation textuelle du résultat telle que fournie par Hub'Eau.
+          Cette colonne permet notamment de conserver les valeurs censurées
+          comme "<0,5".
+        data_tests:
+          - not_null
+
+      - name: resultat_numerique
+        description: >
+          Représentation numérique du résultat fournie par Hub'Eau.
+          Elle est conservée telle quelle même lorsque la représentation
+          alphanumérique contient une information supplémentaire, par exemple
+          un opérateur de censure.
+        data_tests:
+          - not_null
+
+      # -----------------------------------------------------------------------
+      # Résultat structuré
+      # -----------------------------------------------------------------------
+
+      - name: operateur_resultat
+        description: >
+          Opérateur extrait du résultat alphanumérique lorsqu'il est présent,
+          par exemple "<" dans "<0,5".
+          La valeur est NULL pour les résultats numériques sans opérateur.
+
+      - name: seuil_resultat
+        description: >
+          Valeur numérique du seuil extraite du résultat alphanumérique lorsque
+          celui-ci contient un opérateur, par exemple 0.5 pour "<0,5".
+          La valeur est NULL pour les résultats ne représentant pas un seuil.
+
+      # -----------------------------------------------------------------------
+      # Unité
+      # -----------------------------------------------------------------------
+
+      - name: code_unite
+        description: >
+          Code de l'unité de mesure du résultat.
+        data_tests:
+          - not_null
+
+      - name: libelle_unite
+        description: >
+          Libellé de l'unité de mesure du résultat, par exemple "mg/L".
+
+      # -----------------------------------------------------------------------
+      # Limite et référence qualité source
+      # -----------------------------------------------------------------------
+
+      - name: limite_qualite_parametre
+        description: >
+          Expression source de la limite de qualité associée au paramètre,
+          par exemple "<=50 mg/L".
+
+      - name: reference_qualite_parametre
+        description: >
+          Référence de qualité associée au paramètre lorsqu'elle est fournie
+          par la source. Cette information peut être NULL.
+
+      # -----------------------------------------------------------------------
+      # Limite qualité structurée
+      # -----------------------------------------------------------------------
+
+      - name: operateur_limite_qualite
+        description: >
+          Opérateur extrait de la limite de qualité, par exemple "<=" dans
+          "<=50 mg/L".
+
+      - name: numerique_limite_qualite
+        description: >
+          Valeur numérique extraite de la limite de qualité,
+          par exemple 50.0 dans "<=50 mg/L".
+
+      - name: unite_limite_qualite
+        description: >
+          Unité extraite de la limite de qualité,
+          par exemple "mg/L" dans "<=50 mg/L".

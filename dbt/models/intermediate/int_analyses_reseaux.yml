@@ -1,0 +1,61 @@
+version: 2
+
+models:
+  - name: int_analyses_reseaux
+    description: >
+      Modèle intermédiaire représentant les associations entre les analyses
+      d'eau potable et les réseaux auxquels elles sont rattachées.
+      Le grain du modèle est d'une ligne par association entre une
+      reference_analyse et un code_reseau.
+      Les réseaux provenant d'un ARRAY dans la source sont dépliés avec UNNEST,
+      puis regroupés par analyse et code réseau. Lorsqu'un même code réseau
+      possède plusieurs variantes de nom pour une analyse, celles-ci sont
+      conservées dans un ARRAY afin de ne pas sélectionner arbitrairement
+      un seul libellé.
+
+    columns:
+
+      # -----------------------------------------------------------------------
+      # Analyse
+      # -----------------------------------------------------------------------
+
+      - name: reference_analyse
+        description: >
+          Référence de l'analyse associée au réseau. Une même analyse peut
+          être associée à plusieurs réseaux.
+        data_tests:
+          - not_null
+
+      - name: code_prelevement
+        description: >
+          Identifiant du prélèvement auquel l'analyse est rattachée.
+          Il permet de relier les associations analyse-réseau au contexte
+          du prélèvement.
+        data_tests:
+          - not_null
+
+      # -----------------------------------------------------------------------
+      # Réseau
+      # -----------------------------------------------------------------------
+
+      - name: code_reseau
+        description: >
+          Code du réseau associé à l'analyse. Il constitue avec
+          reference_analyse le grain métier du modèle.
+        data_tests:
+          - not_null
+
+      - name: noms_reseau
+        description: >
+          Tableau contenant les différents noms observés pour un même
+          code_reseau au sein d'une analyse. Les variantes sont conservées
+          afin d'éviter de choisir arbitrairement un seul libellé lorsque
+          plusieurs noms existent dans la source.
+
+      - name: debit_reseau
+        description: >
+          Débit du réseau observé dans le contexte de l'analyse, conservé
+          sous sa forme textuelle source, par exemple "48 %".
+          Cette information appartient à la relation analyse-réseau et non
+          au réseau lui-même, car sa valeur peut varier entre les analyses.
+          La valeur peut être NULL lorsque le débit n'est pas renseigné.
