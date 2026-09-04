@@ -1,0 +1,142 @@
+version: 2
+
+models:
+  - name: int_prelevements
+    description: >
+      Modèle intermédiaire représentant les prélèvements d'eau potable.
+      Le grain du modèle est d'une ligne par code_prelevement.
+      Il centralise les informations décrivant le contexte du prélèvement :
+      date, localisation, installation amont, acteurs et conformité globale
+      du prélèvement. Les informations propres aux résultats des paramètres
+      analysés sont volontairement traitées dans un modèle intermédiaire séparé.
+
+    columns:
+      # -----------------------------------------------------------------------
+      # Identifiant du prélèvement
+      # -----------------------------------------------------------------------
+
+      - name: code_prelevement
+        description: >
+          Identifiant métier du prélèvement. Cette colonne définit le grain
+          du modèle : un code_prelevement doit correspondre à une seule ligne.
+        data_tests:
+          - not_null
+          - unique
+
+      # -----------------------------------------------------------------------
+      # Informations temporelles
+      # -----------------------------------------------------------------------
+
+      - name: date_heure_prelevement
+        description: >
+          Date et heure du prélèvement provenant du timestamp source
+          date_prelevement de la couche staging.
+        data_tests:
+          - not_null
+
+      - name: date_prelevement
+        description: >
+          Date calendaire du prélèvement, dérivée de date_heure_prelevement
+          afin de faciliter les analyses temporelles.
+        data_tests:
+          - not_null
+
+      - name: annee_prelevement
+        description: >
+          Année du prélèvement extraite de date_heure_prelevement.
+
+      - name: mois_prelevement
+        description: >
+          Numéro du mois du prélèvement, compris entre 1 et 12 et extrait
+          de date_heure_prelevement.
+
+      - name: jour_prelevement
+        description: >
+          Jour du mois du prélèvement, extrait de date_heure_prelevement.
+
+      # -----------------------------------------------------------------------
+      # Géographie
+      # -----------------------------------------------------------------------
+
+      - name: code_commune
+        description: >
+          Code de la commune associée au prélèvement.
+        data_tests:
+          - not_null
+
+      - name: nom_commune
+        description: >
+          Nom de la commune associée au prélèvement.
+
+      # -----------------------------------------------------------------------
+      # Lieu d'analyse et installation amont
+      # -----------------------------------------------------------------------
+
+      - name: code_lieu_analyse
+        description: >
+          Code indiquant le lieu d'analyse associé au prélèvement.
+
+      - name: code_installation_amont
+        description: >
+          Code de l'installation amont associée au prélèvement.
+          Le code est conservé comme identifiant métier de l'installation,
+          indépendamment des éventuelles évolutions de son libellé.
+        data_tests:
+          - not_null
+
+      - name: nom_installation_amont
+        description: >
+          Libellé de l'installation amont associé au prélèvement.
+          Ce libellé est conservé séparément du code car il peut évoluer
+          dans le temps.
+
+      # -----------------------------------------------------------------------
+      # Acteurs
+      # -----------------------------------------------------------------------
+
+      - name: nom_uge
+        description: >
+          Nom de l'unité de gestion de l'eau (UGE) associée au prélèvement.
+          Cette information est conservée comme attribut descriptif et non
+          comme identifiant métier stable.
+
+      - name: nom_distributeur
+        description: >
+          Nom du distributeur associé au prélèvement. Cette information est
+          conservée comme attribut descriptif et non comme identifiant stable.
+
+      - name: nom_moa
+        description: >
+          Nom de la maîtrise d'ouvrage (MOA) associée au prélèvement.
+          Cette information est conservée comme attribut descriptif et non
+          comme identifiant stable.
+
+      # -----------------------------------------------------------------------
+      # Conformité globale du prélèvement
+      # -----------------------------------------------------------------------
+
+      - name: conclusion_conformite_prelevement
+        description: >
+          Conclusion textuelle de conformité portant sur le prélèvement dans
+          son ensemble. Elle ne doit pas être interprétée comme une conformité
+          spécifique au paramètre nitrate.
+
+      - name: conformite_limites_bact_prelevement
+        description: >
+          Code de conformité du prélèvement vis-à-vis des limites de qualité
+          bactériologiques.
+
+      - name: conformite_limites_pc_prelevement
+        description: >
+          Code de conformité du prélèvement vis-à-vis des limites de qualité
+          physico-chimiques.
+
+      - name: conformite_references_bact_prelevement
+        description: >
+          Code de conformité du prélèvement vis-à-vis des références de
+          qualité bactériologiques.
+
+      - name: conformite_references_pc_prelevement
+        description: >
+          Code de conformité du prélèvement vis-à-vis des références de
+          qualité physico-chimiques.
