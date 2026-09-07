@@ -1,0 +1,60 @@
+version: 2
+
+models:
+  - name: dim_date
+    description: >
+      Dimension calendrier utilisée pour les analyses temporelles.
+      Le grain du modèle est d'une ligne par date calendaire comprise
+      entre le premier et le dernier prélèvement disponibles.
+      La dimension est continue : les dates sans prélèvement sont également
+      présentes afin de faciliter les analyses temporelles et la restitution
+      dans les tableaux de bord.
+
+    columns:
+
+      - name: date
+        description: >
+          Date calendaire servant de clé de la dimension.
+          Une date apparaît une seule fois dans le modèle.
+        data_tests:
+          - not_null
+          - unique
+
+      - name: annee
+        description: >
+          Année calendaire associée à la date.
+        data_tests:
+          - not_null
+
+      - name: trimestre
+        description: >
+          Numéro du trimestre calendaire, compris entre 1 et 4.
+
+      - name: numero_mois
+        description: >
+          Numéro du mois calendaire, compris entre 1 et 12.
+        data_tests:
+          - not_null
+
+      - name: nom_mois
+        description: >
+          Nom du mois en français, par exemple "Janvier" ou "Avril".
+
+      - name: annee_mois
+        description: >
+          Période mensuelle au format YYYY-MM, par exemple "2026-04".
+          Ce format permet notamment de distinguer un même mois entre
+          plusieurs années et de faciliter le tri chronologique.
+
+      - name: jour_mois
+        description: >
+          Numéro du jour dans le mois.
+
+      - name: jour_semaine
+        description: >
+          Numéro du jour de la semaine selon la convention BigQuery :
+          dimanche = 1, lundi = 2, ..., samedi = 7.
+
+      - name: nom_jour_semaine
+        description: >
+          Nom du jour de la semaine en français.

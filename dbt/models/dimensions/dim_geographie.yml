@@ -1,0 +1,43 @@
+version: 2
+
+models:
+  - name: dim_geographie
+    description: >
+      Dimension géographique utilisée pour analyser les résultats selon
+      la localisation des prélèvements. Le grain du modèle est d'une ligne
+      par commune identifiée par code_commune. Chaque commune est associée
+      à son département afin de permettre des analyses aux niveaux communal
+      et départemental.
+
+    columns:
+      # -----------------------------------------------------------------------
+      # Commune - clé de la dimension
+      # -----------------------------------------------------------------------
+
+      - name: code_commune
+        description: >
+          Code de la commune servant d'identifiant métier de la dimension
+          géographique. Un code_commune doit correspondre à une seule ligne.
+        data_tests:
+          - not_null
+          - unique
+
+      - name: nom_commune
+        description: >
+          Nom de la commune associée au code_commune.
+        data_tests:
+          - not_null
+
+      # -----------------------------------------------------------------------
+      # Département
+      # -----------------------------------------------------------------------
+
+      - name: code_departement
+        description: >
+          Code du département auquel appartient la commune.
+        data_tests:
+          - not_null
+
+      - name: nom_departement
+        description: >
+          Nom du département auquel appartient la commune.
