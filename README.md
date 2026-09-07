@@ -18,7 +18,11 @@ hubeau_raw.resultats_dis_raw
      ▼
 dbt Cloud
 STG → ODS → DIM → FACT
-Githu pour les versionnments des modèls
+Github pour les versionnments des modèles
+     │
+     ▼
+BigQuery 
+Data Warehouse pour le stockage des modèles dbt
      │
      ▼
 Power BI
@@ -48,21 +52,21 @@ hubeau_raw
         │
         ▼
 hubeau_stg
-└── stg_resultats_dis
+└── stg_resultats_dis , avec ses tests et documentations
         │
         ▼
 hubeau_ods
-├── int_prelevements
-├── int_resultats
-└── int_analyses_reseaux
+├── int_prelevements , avec ses tests et documentations
+├── int_resultats , avec ses tests et documentations
+└── int_analyses_reseaux , avec ses tests et documentations
         │
         ▼
 hubeau_dim
-├── dim_date
-├── dim_geographie
-├── dim_parametre
-├── dim_installation
-└── dim_reseau
+├── dim_date , avec ses tests et documentations
+├── dim_geographie , avec ses tests et documentations
+├── dim_parametre , avec ses tests et documentations
+├── dim_installation , avec ses tests et documentations
+└── dim_reseau , avec ses tests et documentations
 ```
 
 ### 🚧 Reste à construire
