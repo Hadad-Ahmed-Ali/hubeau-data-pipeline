@@ -16,13 +16,15 @@ BigQuery RAW
 hubeau_raw.resultats_dis_raw
      │
      ▼
-dbt Cloud
+dbt Cloud ◄────────► GitHub
+     │               Versionnement
+     │               des modèles dbt
+     ▼
 STG → ODS → DIM → FACT
-Github pour les versionnments des modèles
      │
      ▼
-BigQuery 
-Data Warehouse pour le stockage des modèles dbt
+BigQuery
+Stockage des modèles dbt matérialisés
      │
      ▼
 Power BI
