@@ -9,10 +9,11 @@ prelevements as (
 
     select
 
-    --- Le modèle doit garantir une seule ligne par prélèvement : grain cible = 1 ligne par code_prelevement, autrement dit 1 ligne = 1 prélèvement
-    --- Les attributs ci-dessous ont été vérifiés comme cohérents
-    --- pour un même code_prelevement dans les données actuelles.
-
+        -- Grain cible :
+        -- 1 ligne = 1 prélèvement identifié par code_prelevement.
+        --
+        -- Les attributs ci-dessous ont été vérifiés comme cohérents
+        -- pour un même code_prelevement dans les données actuelles.
         code_prelevement,
 
         -- On conserve le timestamp source et on ajoute des attributs calendaires
@@ -24,8 +25,12 @@ prelevements as (
         extract(day from any_value(date_prelevement)) as jour_prelevement,
 
         -- Informations géographiques associées au prélèvement.
+        -- Le département est conservé avec la commune afin de disposer
+        -- d'un contexte géographique complet pour les futures dimensions.
         any_value(code_commune) as code_commune,
         any_value(nom_commune) as nom_commune,
+        any_value(code_departement) as code_departement,
+        any_value(nom_departement) as nom_departement,
 
         -- Contexte de l'analyse et de l'installation amont.
         any_value(code_lieu_analyse) as code_lieu_analyse,
@@ -33,7 +38,8 @@ prelevements as (
         any_value(nom_installation_amont) as nom_installation_amont,
 
         -- Acteurs associés au prélèvement.
-        -- Ces noms sont conservés comme attributs descriptifs et non comme identifiants stables.
+        -- Ces noms sont conservés comme attributs descriptifs
+        -- et non comme identifiants stables.
         any_value(nom_uge) as nom_uge,
         any_value(nom_distributeur) as nom_distributeur,
         any_value(nom_moa) as nom_moa,
@@ -56,6 +62,7 @@ prelevements as (
             as conformite_references_pc_prelevement
 
     from source
+
     group by code_prelevement
 
 )

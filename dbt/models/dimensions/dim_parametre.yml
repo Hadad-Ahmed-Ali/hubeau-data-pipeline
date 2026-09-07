@@ -1,0 +1,73 @@
+version: 2
+
+models:
+  - name: dim_parametre
+    description: >
+      Dimension décrivant les paramètres de qualité de l'eau associés
+      aux résultats d'analyse. Le grain du modèle est d'une ligne par
+      paramètre identifié par code_parametre. Les différents codes,
+      libellés et l'unité observée sont regroupés afin de fournir les
+      attributs descriptifs nécessaires aux analyses et tableaux de bord.
+
+    columns:
+      # -----------------------------------------------------------------------
+      # Paramètre - clé de la dimension
+      # -----------------------------------------------------------------------
+
+      - name: code_parametre
+        description: >
+          Code du paramètre servant d'identifiant métier de la dimension.
+          Un code_parametre doit correspondre à une seule ligne.
+        data_tests:
+          - not_null
+          - unique
+
+      # -----------------------------------------------------------------------
+      # Codes et classification du paramètre
+      # -----------------------------------------------------------------------
+
+      - name: code_parametre_se
+        description: >
+          Code alternatif du paramètre utilisé dans les données Hub'Eau.
+
+      - name: code_parametre_cas
+        description: >
+          Code CAS associé au paramètre lorsqu'il est disponible.
+          Certaines observations sources peuvent ne pas renseigner cette
+          information ; la dimension conserve l'unique valeur non nulle
+          observée pour le paramètre lorsqu'elle existe.
+
+      - name: code_type_parametre
+        description: >
+          Code indiquant le type du paramètre.
+
+      # -----------------------------------------------------------------------
+      # Libellés
+      # -----------------------------------------------------------------------
+
+      - name: libelle_parametre
+        description: >
+          Libellé principal du paramètre.
+
+      - name: libelle_parametre_maj
+        description: >
+          Libellé du paramètre fourni en majuscules dans les données source.
+
+      - name: libelle_parametre_web
+        description: >
+          Libellé web du paramètre lorsqu'il est disponible.
+          Cette information est actuellement absente pour le paramètre
+          présent dans le périmètre du projet.
+
+      # -----------------------------------------------------------------------
+      # Unité
+      # -----------------------------------------------------------------------
+
+      - name: code_unite
+        description: >
+          Code de l'unité de mesure observée pour le paramètre.
+
+      - name: libelle_unite
+        description: >
+          Libellé de l'unité de mesure observée pour le paramètre,
+          par exemple mg/L pour les nitrates.

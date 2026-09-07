@@ -1,0 +1,36 @@
+version: 2
+
+models:
+  - name: dim_installation
+    description: >
+      Dimension décrivant les installations amont associées aux prélèvements
+      d'eau potable. Le grain du modèle est d'une ligne par installation
+      identifiée par code_installation_amont. Lorsqu'une installation présente
+      plusieurs libellés au cours du temps, le libellé associé au prélèvement
+      le plus récent est retenu comme libellé courant.
+
+    columns:
+      # -----------------------------------------------------------------------
+      # Installation - clé de la dimension
+      # -----------------------------------------------------------------------
+
+      - name: code_installation_amont
+        description: >
+          Code de l'installation amont servant d'identifiant métier de la
+          dimension. Un code_installation_amont doit correspondre à une
+          seule ligne.
+        data_tests:
+          - not_null
+          - unique
+
+      # -----------------------------------------------------------------------
+      # Libellé courant
+      # -----------------------------------------------------------------------
+
+      - name: nom_installation_amont
+        description: >
+          Libellé courant de l'installation amont. Lorsqu'un même code
+          d'installation possède plusieurs libellés dans l'historique,
+          le libellé associé au prélèvement le plus récent est retenu.
+        data_tests:
+          - not_null
