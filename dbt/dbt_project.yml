@@ -19,19 +19,18 @@ clean-targets:
 
 models:
   hubeau_data_pipeline:
-
     staging:
       +schema: hubeau_stg
       +materialized: view
-
     intermediate:
       +schema: hubeau_ods
       +materialized: table
-
     dimensions:
       +schema: hubeau_dim
       +materialized: table
-
     facts:
+      +schema: hubeau_fact
+      +materialized: table
+    bridges:
       +schema: hubeau_fact
       +materialized: table

@@ -1,0 +1,35 @@
+version: 2
+
+models:
+  - name: bridge_prelevements_reseaux
+    description: >
+      Table de pont permettant de représenter la relation plusieurs-à-plusieurs
+      entre les prélèvements et les réseaux de distribution sans modifier
+      le grain de fact_prelevements. Un prélèvement peut être associé à
+      plusieurs réseaux et un même réseau peut être associé à plusieurs
+      prélèvements. Le grain du modèle est d'une ligne par association unique
+      entre un prélèvement et un réseau.
+
+    columns:
+
+      - name: code_prelevement
+        description: >
+          Code du prélèvement. Il permet de relier la table de pont
+          à fact_prelevements.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('fact_prelevements')
+                field: code_prelevement
+
+      - name: code_reseau
+        description: >
+          Code du réseau de distribution. Il permet de relier la table
+          de pont à dim_reseau.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_reseau')
+                field: code_reseau

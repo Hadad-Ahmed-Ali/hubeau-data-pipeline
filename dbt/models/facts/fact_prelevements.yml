@@ -1,0 +1,103 @@
+version: 2
+
+models:
+  - name: fact_prelevements
+    description: >
+      Table de faits décrivant les prélèvements de qualité de l'eau.
+      Le grain du modèle est d'une ligne par prélèvement identifié
+      par code_prelevement. Elle porte les indicateurs de conformité
+      associés au prélèvement ainsi que les clés permettant les analyses
+      temporelles, géographiques et par installation.
+
+    columns:
+
+      # -----------------------------------------------------------------------
+      # Prélèvement - identifiant métier et grain
+      # -----------------------------------------------------------------------
+
+      - name: code_prelevement
+        description: >
+          Code identifiant le prélèvement. Un code_prelevement doit
+          correspondre à une seule ligne dans la table de faits.
+        data_tests:
+          - not_null
+          - unique
+
+      # -----------------------------------------------------------------------
+      # Temps
+      # -----------------------------------------------------------------------
+
+      - name: date_prelevement
+        description: >
+          Date du prélèvement utilisée pour relier la table de faits
+          à la dimension calendrier.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date
+
+      - name: date_heure_prelevement
+        description: >
+          Date et heure précises du prélèvement telles que conservées
+          dans les données sources.
+        data_tests:
+          - not_null
+
+      # -----------------------------------------------------------------------
+      # Géographie et installation
+      # -----------------------------------------------------------------------
+
+      - name: code_commune
+        description: >
+          Code de la commune associée au prélèvement, utilisé pour relier
+          la table de faits à la dimension géographique.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_geographie')
+                field: code_commune
+
+      - name: code_installation_amont
+        description: >
+          Code de l'installation amont associée au prélèvement, utilisé
+          pour relier la table de faits à la dimension installation.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_installation')
+                field: code_installation_amont
+
+      # -----------------------------------------------------------------------
+      # Conformité du prélèvement
+      # -----------------------------------------------------------------------
+
+      - name: conclusion_conformite_prelevement
+        description: >
+          Conclusion sanitaire textuelle associée au prélèvement.
+          Cette information est conservée telle qu'elle est fournie
+          par la source et n'est pas interprétée comme un indicateur
+          binaire de conformité.
+
+      - name: conformite_limites_bact_prelevement
+        description: >
+          Code source relatif à la conformité du prélèvement aux limites
+          de qualité bactériologiques.
+
+      - name: conformite_limites_pc_prelevement
+        description: >
+          Code source relatif à la conformité du prélèvement aux limites
+          de qualité physico-chimiques.
+
+      - name: conformite_references_bact_prelevement
+        description: >
+          Code source relatif à la conformité du prélèvement aux références
+          de qualité bactériologiques.
+
+      - name: conformite_references_pc_prelevement
+        description: >
+          Code source relatif à la conformité du prélèvement aux références
+          de qualité physico-chimiques.
