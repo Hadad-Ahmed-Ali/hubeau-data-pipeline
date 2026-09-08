@@ -5,50 +5,62 @@ models:
     description: >
       Modèle intermédiaire contenant les résultats d'analyse des paramètres
       mesurés lors des prélèvements d'eau potable.
-      Le grain du modèle est d'une ligne par résultat d'analyse d'un paramètre
-      donné pour un prélèvement.
-      Le modèle conserve les représentations source des résultats et des limites
-      de qualité, tout en ajoutant des champs structurés permettant d'exploiter
-      les opérateurs, seuils et unités dans les couches décisionnelles suivantes.
+      Le grain cible est d'une ligne par résultat d'un paramètre donné,
+      pour un prélèvement donné et un lieu d'analyse donné.
+      Sur le périmètre étudié, la combinaison code_prelevement,
+      code_parametre et code_lieu_analyse identifie un résultat sans doublon.
+      Le modèle conserve les représentations source des résultats ainsi que
+      les limites et références de qualité, tout en ajoutant des champs
+      structurés permettant d'exploiter les opérateurs et bornes numériques
+      dans les couches décisionnelles suivantes.
 
     columns:
 
       # -----------------------------------------------------------------------
-      # Identifiants
+      # Identification du résultat
       # -----------------------------------------------------------------------
 
       - name: code_prelevement
         description: >
-          Identifiant du prélèvement auquel le résultat d'analyse est rattaché.
-          Plusieurs résultats de paramètres peuvent être associés à un même
-          code_prelevement.
+          Identifiant du prélèvement auquel le résultat est rattaché.
+          Plusieurs résultats peuvent être associés à un même prélèvement.
+        data_tests:
+          - not_null
+
+      - name: code_parametre
+        description: >
+          Code du paramètre analysé. Il participe avec code_prelevement
+          et code_lieu_analyse à l'identification du résultat sur le
+          périmètre étudié.
+        data_tests:
+          - not_null
+
+      - name: code_lieu_analyse
+        description: >
+          Code du lieu d'analyse associé au résultat. Ce champ permet
+          notamment de distinguer plusieurs résultats d'un même paramètre
+          pour un même prélèvement.
         data_tests:
           - not_null
 
       - name: reference_analyse
         description: >
-          Référence de l'analyse associée au résultat.
-        data_tests:
-          - not_null
+          Référence de l'analyse associée au résultat lorsqu'elle est
+          fournie par la source. Elle peut être NULL et ne constitue pas
+          l'identifiant métier du résultat.
 
       # -----------------------------------------------------------------------
       # Paramètre analysé
       # -----------------------------------------------------------------------
 
-      - name: code_parametre
-        description: >
-          Code du paramètre analysé.
-        data_tests:
-          - not_null
-
       - name: code_parametre_se
         description: >
-          Code du paramètre issu du référentiel SANDRE associé au résultat.
+          Code SE associé au paramètre analysé.
 
       - name: code_parametre_cas
         description: >
           Code CAS du paramètre lorsqu'il est disponible.
-          Cette information peut être absente selon le paramètre analysé.
+          Cette information peut être absente selon le résultat.
 
       - name: code_type_parametre
         description: >
@@ -65,7 +77,7 @@ models:
       - name: libelle_parametre_web
         description: >
           Libellé destiné à l'affichage web lorsqu'il est fourni par la source.
-          Cette colonne peut être NULL selon le paramètre.
+          Cette colonne peut être NULL.
 
       # -----------------------------------------------------------------------
       # Résultat source
@@ -74,19 +86,19 @@ models:
       - name: resultat_alphanumerique
         description: >
           Représentation textuelle du résultat telle que fournie par Hub'Eau.
-          Cette colonne permet notamment de conserver les valeurs censurées
-          comme "<0,5".
+          Elle permet notamment de conserver les valeurs censurées telles
+          que "<0,5" ainsi que les valeurs non mesurées telles que "N.M.".
         data_tests:
           - not_null
 
       - name: resultat_numerique
         description: >
           Représentation numérique du résultat fournie par Hub'Eau.
-          Elle est conservée telle quelle même lorsque la représentation
-          alphanumérique contient une information supplémentaire, par exemple
-          un opérateur de censure.
-        data_tests:
-          - not_null
+          Elle peut être NULL lorsque le résultat est uniquement
+          alphanumérique, notamment pour les valeurs "N.M.".
+          Une valeur numérique égale à 0 ne doit pas être interprétée
+          automatiquement comme une mesure réellement nulle lorsque
+          resultat_alphanumerique indique une valeur censurée.
 
       # -----------------------------------------------------------------------
       # Résultat structuré
@@ -95,58 +107,105 @@ models:
       - name: operateur_resultat
         description: >
           Opérateur extrait du résultat alphanumérique lorsqu'il est présent,
-          par exemple "<" dans "<0,5".
-          La valeur est NULL pour les résultats numériques sans opérateur.
+          par exemple "<" dans "<0,5". La valeur est NULL lorsque le résultat
+          ne comporte pas d'opérateur.
 
       - name: seuil_resultat
         description: >
-          Valeur numérique du seuil extraite du résultat alphanumérique lorsque
-          celui-ci contient un opérateur, par exemple 0.5 pour "<0,5".
-          La valeur est NULL pour les résultats ne représentant pas un seuil.
+          Valeur numérique du seuil extraite du résultat alphanumérique
+          lorsque celui-ci contient un opérateur, par exemple 0.5 pour
+          "<0,5". La valeur est NULL lorsque le résultat ne représente
+          pas un seuil.
 
       # -----------------------------------------------------------------------
-      # Unité
+      # Unité du résultat
       # -----------------------------------------------------------------------
 
       - name: code_unite
         description: >
-          Code de l'unité de mesure du résultat.
+          Code de l'unité associée au résultat.
         data_tests:
           - not_null
 
       - name: libelle_unite
         description: >
-          Libellé de l'unité de mesure du résultat, par exemple "mg/L".
+          Libellé de l'unité associée au résultat.
+          L'unité dépend du paramètre analysé.
 
       # -----------------------------------------------------------------------
-      # Limite et référence qualité source
+      # Expressions qualité source
       # -----------------------------------------------------------------------
 
       - name: limite_qualite_parametre
         description: >
-          Expression source de la limite de qualité associée au paramètre,
-          par exemple "<=50 mg/L".
+          Expression source de la limite de qualité associée au résultat
+          lorsqu'elle est fournie. Cette information est conservée au grain
+          du résultat car une même valeur de paramètre peut être associée
+          à des limites différentes selon le contexte.
 
       - name: reference_qualite_parametre
         description: >
-          Référence de qualité associée au paramètre lorsqu'elle est fournie
-          par la source. Cette information peut être NULL.
+          Expression source de la référence de qualité associée au résultat
+          lorsqu'elle est fournie. Elle reste distincte de la limite de qualité,
+          car ces deux notions ne doivent pas être fusionnées.
 
       # -----------------------------------------------------------------------
-      # Limite qualité structurée
+      # Limite de qualité structurée
       # -----------------------------------------------------------------------
 
-      - name: operateur_limite_qualite
+      - name: operateur_min_limite_qualite
         description: >
-          Opérateur extrait de la limite de qualité, par exemple "<=" dans
-          "<=50 mg/L".
+          Opérateur de la borne minimale de la limite de qualité lorsqu'une
+          borne inférieure est présente, par exemple ">=".
 
-      - name: numerique_limite_qualite
+      - name: valeur_min_limite_qualite
         description: >
-          Valeur numérique extraite de la limite de qualité,
-          par exemple 50.0 dans "<=50 mg/L".
+          Valeur numérique de la borne minimale de la limite de qualité.
+          Elle est NULL lorsqu'aucune borne minimale n'est définie.
+
+      - name: operateur_max_limite_qualite
+        description: >
+          Opérateur de la borne maximale de la limite de qualité lorsqu'une
+          borne supérieure est présente, par exemple "<=".
+
+      - name: valeur_max_limite_qualite
+        description: >
+          Valeur numérique de la borne maximale de la limite de qualité.
+          Par exemple 50.0 pour une expression source "<=50 mg/L".
 
       - name: unite_limite_qualite
         description: >
-          Unité extraite de la limite de qualité,
-          par exemple "mg/L" dans "<=50 mg/L".
+          Unité associée à la limite de qualité lorsqu'une limite est fournie.
+          Elle est dérivée de l'unité du résultat, vérifiée comme stable
+          par paramètre sur le périmètre étudié.
+
+      # -----------------------------------------------------------------------
+      # Référence de qualité structurée
+      # -----------------------------------------------------------------------
+
+      - name: operateur_min_reference_qualite
+        description: >
+          Opérateur de la borne minimale de la référence de qualité lorsqu'une
+          borne inférieure est présente. Par exemple ">=" dans
+          ">=6,5 et <=9 unité pH".
+
+      - name: valeur_min_reference_qualite
+        description: >
+          Valeur numérique de la borne minimale de la référence de qualité.
+          Par exemple 6.5 pour ">=6,5 et <=9 unité pH".
+
+      - name: operateur_max_reference_qualite
+        description: >
+          Opérateur de la borne maximale de la référence de qualité lorsqu'une
+          borne supérieure est présente. Par exemple "<=" dans
+          ">=6,5 et <=9 unité pH".
+
+      - name: valeur_max_reference_qualite
+        description: >
+          Valeur numérique de la borne maximale de la référence de qualité.
+          Par exemple 9.0 pour ">=6,5 et <=9 unité pH".
+
+      - name: unite_reference_qualite
+        description: >
+          Unité associée à la référence de qualité lorsqu'une référence
+          est fournie. Elle est dérivée de l'unité du résultat.

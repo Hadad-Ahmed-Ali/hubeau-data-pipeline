@@ -6,7 +6,7 @@ models:
       Dimension décrivant les paramètres de qualité de l'eau associés
       aux résultats d'analyse. Le grain du modèle est d'une ligne par
       paramètre identifié par code_parametre. Les différents codes,
-      libellés et l'unité observée sont regroupés afin de fournir les
+      libellés et l'unité de mesure sont regroupés afin de fournir les
       attributs descriptifs nécessaires aux analyses et tableaux de bord.
 
     columns:
@@ -34,8 +34,8 @@ models:
         description: >
           Code CAS associé au paramètre lorsqu'il est disponible.
           Certaines observations sources peuvent ne pas renseigner cette
-          information ; la dimension conserve l'unique valeur non nulle
-          observée pour le paramètre lorsqu'elle existe.
+          information. Lorsqu'un code CAS existe pour un paramètre,
+          la dimension conserve la valeur non nulle observée.
 
       - name: code_type_parametre
         description: >
@@ -55,9 +55,8 @@ models:
 
       - name: libelle_parametre_web
         description: >
-          Libellé web du paramètre lorsqu'il est disponible.
-          Cette information est actuellement absente pour le paramètre
-          présent dans le périmètre du projet.
+          Libellé web du paramètre lorsqu'il est disponible dans les
+          données source.
 
       # -----------------------------------------------------------------------
       # Unité
@@ -65,9 +64,14 @@ models:
 
       - name: code_unite
         description: >
-          Code de l'unité de mesure observée pour le paramètre.
+          Code de l'unité de mesure associée au paramètre.
+        data_tests:
+          - not_null
 
       - name: libelle_unite
         description: >
-          Libellé de l'unité de mesure observée pour le paramètre,
-          par exemple mg/L pour les nitrates.
+          Libellé de l'unité de mesure associée au paramètre.
+          L'unité dépend du paramètre analysé et peut notamment correspondre
+          à mg/L, µg/L, °C, NFU, unité pH ou µS/cm.
+        data_tests:
+          - not_null

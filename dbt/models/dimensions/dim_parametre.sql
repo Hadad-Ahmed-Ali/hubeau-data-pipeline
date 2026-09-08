@@ -1,3 +1,7 @@
+-- Grain cible :
+-- 1 ligne = 1 paramètre de qualité de l'eau
+-- identifié par code_parametre.
+
 with source as (
 
     -- Les informations décrivant les paramètres sont récupérées
@@ -18,32 +22,22 @@ with source as (
 ),
 
 parametres as (
-
-    -- Grain cible :
-    -- 1 ligne = 1 paramètre de qualité de l'eau
-    -- identifié par code_parametre.
+    -- Les attributs descriptifs et l'unité ont été vérifiés comme stables
+    -- pour un même code_parametre sur le périmètre étudié.
     --
-    -- Les attributs ont été vérifiés comme stables dans les données actuelles.
-    -- Pour code_parametre_cas, certaines lignes sont NULL alors qu'une unique
-    -- valeur non nulle existe ; on conserve donc cette valeur lorsqu'elle existe.
+    -- Certaines observations peuvent avoir un code_parametre_cas NULL.
+    -- Lorsqu'un code CAS existe pour un paramètre, une seule valeur non nulle
+    -- distincte a été observée ; MAX permet donc de conserver cette valeur.
     select
         code_parametre,
 
         any_value(code_parametre_se) as code_parametre_se,
-
-        array_agg(
-            distinct code_parametre_cas ignore nulls
-            limit 1
-        )[safe_offset(0)] as code_parametre_cas,
-
+        max(code_parametre_cas) as code_parametre_cas,
         any_value(code_type_parametre) as code_type_parametre,
+
         any_value(libelle_parametre) as libelle_parametre,
         any_value(libelle_parametre_maj) as libelle_parametre_maj,
-
-        array_agg(
-            distinct libelle_parametre_web ignore nulls
-            limit 1
-        )[safe_offset(0)] as libelle_parametre_web,
+        any_value(libelle_parametre_web) as libelle_parametre_web,
 
         any_value(code_unite) as code_unite,
         any_value(libelle_unite) as libelle_unite

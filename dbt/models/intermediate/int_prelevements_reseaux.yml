@@ -1,0 +1,27 @@
+version: 2
+
+models:
+  - name: int_prelevements_reseaux
+    description: >
+      Modèle intermédiaire représentant les associations entre les prélèvements
+      et les réseaux de distribution d'eau. Le grain cible est d'une ligne
+      par association entre un prélèvement et un réseau. Les informations
+      réseau présentes dans les différents résultats d'un même prélèvement
+      sont dédupliquées afin de ne pas multiplier artificiellement les
+      associations.
+
+    columns:
+
+      - name: code_prelevement
+        description: >
+          Identifiant du prélèvement associé au réseau. Un même prélèvement
+          peut être rattaché à plusieurs réseaux.
+        data_tests:
+          - not_null
+
+      - name: code_reseau
+        description: >
+          Identifiant du réseau de distribution associé au prélèvement.
+          Un même réseau peut être associé à plusieurs prélèvements.
+        data_tests:
+          - not_null

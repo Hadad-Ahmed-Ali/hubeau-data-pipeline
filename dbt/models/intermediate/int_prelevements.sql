@@ -12,12 +12,11 @@ prelevements as (
         -- Grain cible :
         -- 1 ligne = 1 prélèvement identifié par code_prelevement.
         --
-        -- Les attributs ci-dessous ont été vérifiés comme cohérents
-        -- pour un même code_prelevement dans les données actuelles.
+        -- Les attributs conservés ci-dessous ont été vérifiés comme cohérents
+        -- pour un même code_prelevement sur le périmètre étudié.
         code_prelevement,
 
-        -- On conserve le timestamp source et on ajoute des attributs calendaires
-        -- afin de faciliter les analyses temporelles dans les couches suivantes.
+        -- Informations temporelles du prélèvement.
         any_value(date_prelevement) as date_heure_prelevement,
         date(any_value(date_prelevement)) as date_prelevement,
         extract(year from any_value(date_prelevement)) as annee_prelevement,
@@ -25,21 +24,16 @@ prelevements as (
         extract(day from any_value(date_prelevement)) as jour_prelevement,
 
         -- Informations géographiques associées au prélèvement.
-        -- Le département est conservé avec la commune afin de disposer
-        -- d'un contexte géographique complet pour les futures dimensions.
         any_value(code_commune) as code_commune,
         any_value(nom_commune) as nom_commune,
         any_value(code_departement) as code_departement,
         any_value(nom_departement) as nom_departement,
 
-        -- Contexte de l'analyse et de l'installation amont.
-        any_value(code_lieu_analyse) as code_lieu_analyse,
+        -- Installation amont associée au prélèvement.
         any_value(code_installation_amont) as code_installation_amont,
         any_value(nom_installation_amont) as nom_installation_amont,
 
         -- Acteurs associés au prélèvement.
-        -- Ces noms sont conservés comme attributs descriptifs
-        -- et non comme identifiants stables.
         any_value(nom_uge) as nom_uge,
         any_value(nom_distributeur) as nom_distributeur,
         any_value(nom_moa) as nom_moa,
