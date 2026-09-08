@@ -1,13 +1,17 @@
+-- Grain cible :
+-- 1 ligne = 1 résultat brut retourné par l'API Hub'Eau.
+--
+-- La couche STG préserve le grain et les 32 champs du RAW.
+-- Les interprétations métier et l'éclatement du champ reseaux
+-- sont volontairement reportés à la couche ODS.
+
 with source as (
---- Ici je selectionne toutes les colonnes de la données sources, par la suite certains pourront ne pas etre prise selectionner dans le stg
---- si par exemple une nouvelle colonne est rajoutée elle sera accessible dans source, mais elle n'entrera pas automatiquement dans le résultat final de STG.
+
     select *
     from {{ source('hubeau_raw', 'resultats_dis_raw') }}
 
 ),
 
---- On selectionne les 32 colonnes explicitement sélectionnées, mêmes types, mêmes noms, grain préservé,
---- NULL préservés, résultat alpha + numérique préservés, reseaux reste ARRAY<STRUCT>
 staged as (
 
     select

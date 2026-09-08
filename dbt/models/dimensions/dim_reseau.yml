@@ -3,12 +3,12 @@ version: 2
 models:
   - name: dim_reseau
     description: >
-      Dimension décrivant les réseaux associés aux analyses de qualité
+      Dimension décrivant les réseaux associés aux prélèvements de qualité
       de l'eau. Le grain du modèle est d'une ligne par réseau identifié
       par code_reseau. Lorsqu'un même réseau possède plusieurs variantes
       de libellé dans les données sources, l'ensemble des variantes
-      distinctes est conservé dans un tableau plutôt qu'un seul nom
-      choisi arbitrairement.
+      distinctes est conservé dans un tableau afin de ne pas sélectionner
+      arbitrairement un nom unique.
 
     columns:
       # -----------------------------------------------------------------------
@@ -29,7 +29,8 @@ models:
 
       - name: noms_reseau
         description: >
-          Tableau contenant l'ensemble des variantes distinctes de nom
-          observées pour le réseau dans les analyses. Plusieurs variantes
-          peuvent coexister sur une même période, elles sont donc toutes
-          conservées afin d'éviter de choisir arbitrairement un libellé.
+          Tableau contenant l'ensemble des variantes distinctes et non nulles
+          de nom observées pour le réseau dans les données sources.
+          Plusieurs variantes peuvent être associées à un même code_reseau ;
+          elles sont donc toutes conservées plutôt qu'un seul libellé
+          choisi arbitrairement.

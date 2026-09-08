@@ -6,8 +6,8 @@ models:
       Modèle de staging des résultats du contrôle sanitaire de l'eau potable
       issus de l'API Hub'Eau. Le modèle conserve le grain et les 32 champs
       de la source RAW. Les transformations métier, notamment l'interprétation
-      des résultats censurés, le parsing des limites de qualité et
-      l'éclatement des réseaux, sont volontairement reportées à la couche ODS.
+      des résultats censurés, le parsing des limites et références de qualité
+      et l'éclatement des réseaux, sont volontairement reportées à la couche ODS.
 
     columns:
 
@@ -38,19 +38,18 @@ models:
 
       - name: code_prelevement
         description: >
-          Identifiant du prélèvement fourni par Hub'Eau. Il est unique
-          dans le périmètre actuel limité aux nitrates, mais aucune contrainte
-          d'unicité n'est définie ici afin de ne pas supposer qu'il restera
-          unique lors d'une future extraction multi-paramètres.
+          Identifiant du prélèvement fourni par Hub'Eau. Plusieurs résultats
+          de paramètres peuvent être associés à un même prélèvement ; aucune
+          contrainte d'unicité n'est donc définie dans la couche staging.
         data_tests:
           - not_null
 
       - name: reference_analyse
         description: >
-          Référence de l'analyse associée au résultat. Conservée séparément
-          du code de prélèvement afin de préserver la sémantique de la source.
-        data_tests:
-          - not_null
+          Référence de l'analyse associée au résultat lorsqu'elle est fournie
+          par la source. Elle peut être absente pour certains résultats et ne
+          constitue pas un identifiant unique du résultat : une même référence
+          peut être partagée par plusieurs paramètres.
 
       - name: date_prelevement
         description: >
@@ -60,17 +59,19 @@ models:
           - not_null
 
       - name: code_lieu_analyse
-        description: "Code du lieu d'analyse fourni par la source."
-
+        description: >
+          Code du lieu d'analyse fourni par la source. Ce champ participe
+          à la distinction de plusieurs résultats d'un même paramètre pour
+          un même prélèvement.
+          
       # -----------------------------------------------------------------------
       # Paramètre
       # -----------------------------------------------------------------------
 
       - name: code_parametre
         description: >
-          Code du paramètre analysé. Le périmètre actuel contient uniquement
-          les nitrates, mais le modèle est conçu pour permettre l'intégration
-          future d'autres paramètres.
+          Code du paramètre analysé. Le périmètre analytique actuel couvre
+          12 paramètres de qualité de l'eau sélectionnés pour le projet.
         data_tests:
           - not_null
 
@@ -90,9 +91,8 @@ models:
 
       - name: libelle_parametre_web
         description: >
-          Libellé web du paramètre. Ce champ est actuellement entièrement
-          absent sur le périmètre étudié mais reste conservé en staging
-          pour respecter le contrat de la source.
+          Libellé web du paramètre lorsqu'il est fourni par la source.
+          Les valeurs absentes sont volontairement conservées à NULL.
 
       - name: code_type_parametre
         description: "Code du type de paramètre fourni par Hub'Eau."
@@ -105,26 +105,27 @@ models:
         description: >
           Représentation alphanumérique du résultat. Ce champ est conservé
           car il porte une information qui peut être perdue dans la valeur
-          numérique, notamment pour les résultats censurés tels que '<0,5'.
+          numérique, notamment pour les résultats censurés tels que '<0,5'
+          ou pour certaines valeurs non mesurées telles que 'N.M.'.
         data_tests:
           - not_null
 
       - name: resultat_numerique
         description: >
-          Représentation numérique du résultat fournie par la source.
-          Une valeur numérique égale à 0 ne doit pas être interprétée
-          automatiquement comme une concentration réellement nulle lorsque
-          le résultat alphanumérique indique une valeur censurée.
-        data_tests:
-          - not_null
+          Représentation numérique du résultat fournie par la source. Elle peut
+          être NULL lorsque le résultat est uniquement alphanumérique, notamment
+          pour les valeurs 'N.M.'. Une valeur numérique égale à 0 ne doit pas
+          non plus être interprétée automatiquement comme une mesure réellement
+          nulle lorsque le résultat alphanumérique indique une valeur censurée.
 
       - name: code_unite
         description: "Code de l'unité associée au résultat."
 
       - name: libelle_unite
         description: >
-          Libellé de l'unité associée au résultat. Le périmètre nitrate
-          actuel utilise mg/L.
+          Libellé de l'unité associée au résultat. L'unité dépend du paramètre
+          analysé et doit être conservée lors de l'interprétation des valeurs
+          numériques.
 
       # -----------------------------------------------------------------------
       # Limites / références qualité
@@ -132,15 +133,17 @@ models:
 
       - name: limite_qualite_parametre
         description: >
-          Limite de qualité du paramètre sous sa représentation source,
-          par exemple '<=50 mg/L'. Son parsing en opérateur, valeur numérique
-          et unité est volontairement reporté à la couche ODS.
+          Limite de qualité du paramètre sous sa représentation source
+          lorsqu'elle est fournie. Elle est conservée séparément de la
+          référence de qualité. Son interprétation et son parsing sont
+          volontairement reportés à la couche ODS.
 
       - name: reference_qualite_parametre
         description: >
-          Référence de qualité du paramètre lorsqu'elle est fournie.
-          Le champ est actuellement vide sur le périmètre étudié mais
-          reste conservé en staging.
+          Référence de qualité du paramètre lorsqu'elle est fournie par la
+          source. Elle est conservée séparément de la limite de qualité car
+          ces deux champs portent des notions distinctes. Son interprétation
+          métier est reportée à la couche ODS.
 
       # -----------------------------------------------------------------------
       # Conformité du prélèvement
@@ -150,7 +153,7 @@ models:
         description: >
           Conclusion textuelle de conformité portant sur le prélèvement
           dans son ensemble. Elle ne doit pas être interprétée comme une
-          conclusion spécifique au paramètre nitrate.
+          conclusion spécifique à l'un des paramètres analysés.
 
       - name: conformite_limites_bact_prelevement
         description: >
@@ -207,8 +210,10 @@ models:
 
       - name: reseaux
         description: >
-          Tableau de structures contenant les réseaux associés au résultat,
-          avec notamment leur code, leur nom et leur débit. Le champ reste
-          sous forme ARRAY<STRUCT> dans le modèle principal de staging afin
-          de préserver le grain des résultats. Son UNNEST et la gestion des
-          doublons seront réalisés dans un modèle séparé en couche ODS.
+          Tableau de structures contenant les réseaux associés au contexte
+          du prélèvement, avec notamment leur code, leur nom et leur débit
+          lorsqu'il est fourni. Le champ reste sous forme ARRAY<STRUCT> en
+          staging afin de préserver le grain des résultats. Sur le périmètre
+          étudié, l'ensemble des codes réseau est invariant entre les différents
+          résultats d'un même prélèvement ; son éclatement et sa modélisation
+          sont reportés à la couche ODS.

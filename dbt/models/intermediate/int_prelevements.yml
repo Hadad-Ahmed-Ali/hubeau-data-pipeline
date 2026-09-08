@@ -11,6 +11,7 @@ models:
       analysés sont volontairement traitées dans un modèle intermédiaire séparé.
 
     columns:
+
       # -----------------------------------------------------------------------
       # Identifiant du prélèvement
       # -----------------------------------------------------------------------
@@ -79,12 +80,8 @@ models:
           au prélèvement.
 
       # -----------------------------------------------------------------------
-      # Lieu d'analyse et installation amont
+      # Installation amont
       # -----------------------------------------------------------------------
-
-      - name: code_lieu_analyse
-        description: >
-          Code indiquant le lieu d'analyse associé au prélèvement.
 
       - name: code_installation_amont
         description: >
@@ -129,7 +126,7 @@ models:
         description: >
           Conclusion textuelle de conformité portant sur le prélèvement dans
           son ensemble. Elle ne doit pas être interprétée comme une conformité
-          spécifique au paramètre nitrate.
+          spécifique à l'un des paramètres analysés.
 
       - name: conformite_limites_bact_prelevement
         description: >

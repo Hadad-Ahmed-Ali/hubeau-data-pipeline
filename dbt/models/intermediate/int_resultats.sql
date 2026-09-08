@@ -1,3 +1,11 @@
+-- Grain cible :
+-- 1 ligne = 1 résultat d'un paramètre donné,
+-- pour un prélèvement donné et un lieu d'analyse donné.
+--
+-- Sur le périmètre étudié, la combinaison
+-- code_prelevement + code_parametre + code_lieu_analyse
+-- identifie un résultat sans doublon.
+
 with source as (
 
     select *
@@ -7,17 +15,24 @@ with source as (
 
 resultats as (
 
-    -- Grain cible : une ligne représente le résultat d'analyse d'un paramètre donné pour un prélèvement.
-    -- c'est à dire : 1 ligne = 1 résultat d'analyse d'un paramètre
     select
 
-        -- Identifiants permettant de relier le résultat
-        -- au prélèvement et à la référence d'analyse.
+        -- --------------------------------------------------------------------
+        -- Identification du résultat
+        -- --------------------------------------------------------------------
+
         code_prelevement,
+        code_parametre,
+        code_lieu_analyse,
+
+        -- reference_analyse est conservée comme information source.
+        -- Elle peut être NULL et ne constitue pas l'identifiant du résultat.
         reference_analyse,
 
-        -- Informations décrivant le paramètre analysé.
-        code_parametre,
+        -- --------------------------------------------------------------------
+        -- Paramètre
+        -- --------------------------------------------------------------------
+
         code_parametre_se,
         code_parametre_cas,
         code_type_parametre,
@@ -25,23 +40,23 @@ resultats as (
         libelle_parametre_maj,
         libelle_parametre_web,
 
-        -- Valeurs source fournies par Hub'Eau.
-        -- Les deux représentations sont conservées afin de ne perdre
-        -- aucune information, notamment pour les résultats censurés.
+        -- --------------------------------------------------------------------
+        -- Résultat source
+        -- --------------------------------------------------------------------
+
+        -- Les représentations alphanumérique et numérique sont toutes les
+        -- deux conservées. La première porte notamment l'information de
+        -- censure (<0,5...), tandis que la seconde peut être NULL pour N.M.
         resultat_alphanumerique,
         resultat_numerique,
 
-        -- Extraction de l'opérateur lorsque le résultat est exprimé
-        -- sous une forme telle que "<0,5" ou "<=1".
+        -- Opérateur associé à un résultat censuré.
         regexp_extract(
             trim(resultat_alphanumerique),
             r'^(<=|>=|<|>)'
         ) as operateur_resultat,
 
-        -- Extraction du seuil associé aux résultats censurés
-        -- (ex. "<0,5" → 0.5).
-        -- SAFE_CAST est utilisé volontairement : si Hub'Eau fournit un format
-        -- inattendu, la valeur dérivée devient NULL au lieu de faire échouer le modèle.
+        -- Seuil numérique associé à un résultat censuré.
         safe_cast(
             replace(
                 regexp_extract(
@@ -54,53 +69,221 @@ resultats as (
             as float64
         ) as seuil_resultat,
 
-        -- Unité associée au résultat.
+        -- --------------------------------------------------------------------
+        -- Unité du résultat
+        -- --------------------------------------------------------------------
+
         code_unite,
         libelle_unite,
 
-        -- Valeurs source décrivant les limites et références
-        -- de qualité associées au paramètre.
+        -- --------------------------------------------------------------------
+        -- Expressions qualité source
+        -- --------------------------------------------------------------------
+
+        -- Limite et référence restent séparées car elles représentent
+        -- deux notions différentes dans les données Hub'Eau.
         limite_qualite_parametre,
-        reference_qualite_parametre,
+        reference_qualite_parametre
 
-        -- Extraction de l'opérateur de la limite de qualité
-        -- (ex. "<=50 mg/L" → "<=").
-        regexp_extract(
-            trim(limite_qualite_parametre),
-            r'^(<=|>=|<|>)'
-        ) as operateur_limite_qualite,
+    from source
 
-        -- Extraction de la valeur numérique de la limite de qualité
-        -- (ex. "<=50 mg/L" → 50.0).
-        -- SAFE_CAST protège également le pipeline contre un éventuel format
-        -- source non reconnu en retournant NULL plutôt qu'une erreur.
+),
+
+qualite_structuree as (
+
+    select
+        *,
+
+        -- --------------------------------------------------------------------
+        -- Limite de qualité : borne minimale
+        -- --------------------------------------------------------------------
+
+        case
+            when regexp_contains(
+                trim(limite_qualite_parametre),
+                r'^>='
+            )
+            then '>='
+            when regexp_contains(
+                trim(limite_qualite_parametre),
+                r'^>'
+            )
+            then '>'
+        end as operateur_min_limite_qualite,
+
         safe_cast(
             replace(
                 regexp_extract(
                     trim(limite_qualite_parametre),
-                    r'^(?:<=|>=|<|>)\s*([0-9]+(?:[.,][0-9]+)?)'
+                    r'^(?:>=|>)\s*([0-9]+(?:[.,][0-9]+)?)'
                 ),
                 ',',
                 '.'
             )
             as float64
-        ) as numerique_limite_qualite,
+        ) as valeur_min_limite_qualite,
 
-        -- Extraction de l'unité présente dans la limite de qualité
-        -- (ex. "<=50 mg/L" → "mg/L").
-        nullif(
-            trim(
+        -- --------------------------------------------------------------------
+        -- Limite de qualité : borne maximale
+        -- --------------------------------------------------------------------
+
+        -- Le groupe (?:<=|<) est volontairement non capturant afin de
+        -- conserver l'expression complète, par exemple "<=50".
+        regexp_extract(
+            trim(limite_qualite_parametre),
+            r'(?:<=|<)\s*[0-9]+(?:[.,][0-9]+)?'
+        ) as expression_max_limite_qualite,
+
+        -- --------------------------------------------------------------------
+        -- Référence de qualité : borne minimale
+        -- --------------------------------------------------------------------
+
+        case
+            when regexp_contains(
+                trim(reference_qualite_parametre),
+                r'^>='
+            )
+            then '>='
+            when regexp_contains(
+                trim(reference_qualite_parametre),
+                r'^>'
+            )
+            then '>'
+        end as operateur_min_reference_qualite,
+
+        safe_cast(
+            replace(
                 regexp_extract(
-                    trim(limite_qualite_parametre),
-                    r'^(?:<=|>=|<|>)\s*[0-9]+(?:[.,][0-9]+)?\s*(.*)$'
-                )
-            ),
-            ''
-        ) as unite_limite_qualite
+                    trim(reference_qualite_parametre),
+                    r'^(?:>=|>)\s*([0-9]+(?:[.,][0-9]+)?)'
+                ),
+                ',',
+                '.'
+            )
+            as float64
+        ) as valeur_min_reference_qualite,
 
-    from source
+        -- La borne maximale peut apparaître au début de l'expression
+        -- ("<=25 °C") ou après une borne minimale
+        -- (">=6,5 et <=9 unité pH").
+        --
+        -- Le groupe est non capturant afin de récupérer l'expression
+        -- complète, par exemple "<=9".
+        regexp_extract(
+            trim(reference_qualite_parametre),
+            r'(?:<=|<)\s*[0-9]+(?:[.,][0-9]+)?'
+        ) as expression_max_reference_qualite
+
+    from resultats
+
+),
+
+final as (
+
+    select
+
+        -- --------------------------------------------------------------------
+        -- Identification
+        -- --------------------------------------------------------------------
+
+        code_prelevement,
+        code_parametre,
+        code_lieu_analyse,
+        reference_analyse,
+
+        -- --------------------------------------------------------------------
+        -- Paramètre
+        -- --------------------------------------------------------------------
+
+        code_parametre_se,
+        code_parametre_cas,
+        code_type_parametre,
+        libelle_parametre,
+        libelle_parametre_maj,
+        libelle_parametre_web,
+
+        -- --------------------------------------------------------------------
+        -- Résultat
+        -- --------------------------------------------------------------------
+
+        resultat_alphanumerique,
+        resultat_numerique,
+        operateur_resultat,
+        seuil_resultat,
+
+        code_unite,
+        libelle_unite,
+
+        -- --------------------------------------------------------------------
+        -- Qualité source
+        -- --------------------------------------------------------------------
+
+        limite_qualite_parametre,
+        reference_qualite_parametre,
+
+        -- --------------------------------------------------------------------
+        -- Limite de qualité structurée
+        -- --------------------------------------------------------------------
+
+        operateur_min_limite_qualite,
+        valeur_min_limite_qualite,
+
+        regexp_extract(
+            expression_max_limite_qualite,
+            r'^(<=|<)'
+        ) as operateur_max_limite_qualite,
+
+        safe_cast(
+            replace(
+                regexp_extract(
+                    expression_max_limite_qualite,
+                    r'^(?:<=|<)\s*([0-9]+(?:[.,][0-9]+)?)'
+                ),
+                ',',
+                '.'
+            )
+            as float64
+        ) as valeur_max_limite_qualite,
+
+        -- L'unité est celle du résultat. Les unités ont été vérifiées comme
+        -- stables par paramètre sur le périmètre étudié.
+        case
+            when nullif(trim(limite_qualite_parametre), '') is not null
+            then libelle_unite
+        end as unite_limite_qualite,
+
+        -- --------------------------------------------------------------------
+        -- Référence de qualité structurée
+        -- --------------------------------------------------------------------
+
+        operateur_min_reference_qualite,
+        valeur_min_reference_qualite,
+
+        regexp_extract(
+            expression_max_reference_qualite,
+            r'^(<=|<)'
+        ) as operateur_max_reference_qualite,
+
+        safe_cast(
+            replace(
+                regexp_extract(
+                    expression_max_reference_qualite,
+                    r'^(?:<=|<)\s*([0-9]+(?:[.,][0-9]+)?)'
+                ),
+                ',',
+                '.'
+            )
+            as float64
+        ) as valeur_max_reference_qualite,
+
+        case
+            when nullif(trim(reference_qualite_parametre), '') is not null
+            then libelle_unite
+        end as unite_reference_qualite
+
+    from qualite_structuree
 
 )
 
 select *
-from resultats
+from final
