@@ -271,8 +271,7 @@ La relation entre `fact_prelevements` et `dim_reseau` est conceptuellement une r
 
 ```text
 fact_prelevements N:N dim_reseau
-
----
+```
 
 ## 5. Principales décisions de modélisation
 
