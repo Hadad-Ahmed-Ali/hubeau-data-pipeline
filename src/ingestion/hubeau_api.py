@@ -69,3 +69,23 @@ def fetch_hubeau_data(
         next_url = data_page["next"]
 
     return all_results
+
+
+def build_raw_dataframe(
+    observations: list[dict]
+) -> pd.DataFrame:
+    """
+    Transforme les observations de l'API en DataFrame RAW.
+
+    Une préparation légère est réalisée sur la colonne
+    date_prelevement.
+    """
+
+    hub_raw = pd.DataFrame(observations)
+
+    hub_raw["date_prelevement"] = pd.to_datetime(
+        hub_raw["date_prelevement"],
+        utc=True
+    )
+
+    return hub_raw
