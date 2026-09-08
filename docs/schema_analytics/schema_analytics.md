@@ -244,3 +244,30 @@ mais elle est matérialisée dans le modèle analytique par deux relations :
 - `dim_reseau.code_reseau` **1:N** `bridge_prelevements_reseaux.code_reseau`
 
 Cette modélisation évite la duplication des prélèvements et préserve le grain des tables de faits.
+
+---
+
+## 4. Relations et cardinalités du modèle analytique
+
+Le tableau suivant formalise les relations entre les tables du modèle analytique.
+
+Les clés indiquées comme **PK métier** correspondent à des clés dont l'unicité est garantie par la logique de modélisation et les tests dbt. Elles ne correspondent pas nécessairement à des contraintes physiques `PRIMARY KEY` déclarées dans BigQuery.
+
+| Table côté 1 | PK métier | Cardinalité | Table côté N | FK | Rôle analytique |
+|---|---|---|---|---|---|
+| `dim_date` | `date` | 1:N | `fact_prelevements` | `date_prelevement` | Analyse temporelle des prélèvements |
+| `dim_date` | `date` | 1:N | `fact_resultats` | `date_prelevement` | Analyse temporelle des résultats |
+| `dim_geographie` | `code_commune` | 1:N | `fact_prelevements` | `code_commune` | Analyse géographique des prélèvements |
+| `dim_geographie` | `code_commune` | 1:N | `fact_resultats` | `code_commune` | Analyse géographique des résultats |
+| `dim_installation` | `code_installation_amont` | 1:N | `fact_prelevements` | `code_installation_amont` | Analyse des prélèvements par installation |
+| `dim_installation` | `code_installation_amont` | 1:N | `fact_resultats` | `code_installation_amont` | Analyse des résultats par installation |
+| `dim_parametre` | `code_parametre` | 1:N | `fact_resultats` | `code_parametre` | Analyse des mesures par paramètre |
+| `fact_prelevements` | `code_prelevement` | 1:N | `bridge_prelevements_reseaux` | `code_prelevement` | Association des prélèvements aux réseaux |
+| `dim_reseau` | `code_reseau` | 1:N | `bridge_prelevements_reseaux` | `code_reseau` | Identification des réseaux associés aux prélèvements |
+
+### Relation métier plusieurs-à-plusieurs
+
+La relation entre `fact_prelevements` et `dim_reseau` est conceptuellement une relation **N:N** :
+
+```text
+fact_prelevements N:N dim_reseau
