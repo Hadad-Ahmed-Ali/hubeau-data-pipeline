@@ -2,14 +2,51 @@
 Module d'ingestion des données de l'API Hub'Eau.
 """
 
-import requests
+import time
+
 import pandas as pd
+import requests
 
 
 BASE_URL = (
     "https://hubeau.eaufrance.fr/api/v1/"
     "qualite_eau_potable/resultats_dis"
 )
+
+
+def get_with_retry(
+    url: str,
+    params: dict | None = None,
+    max_retries: int = 3
+) -> requests.Response:
+    """
+    Effectue une requête GET avec plusieurs tentatives
+    en cas d'indisponibilité temporaire de l'API Hub'Eau.
+
+    Une attente progressive est appliquée après chaque erreur 503.
+    """
+
+    for tentative in range(1, max_retries + 1):
+
+        response = requests.get(url, params=params)
+
+        # Une erreur 503 correspond à une indisponibilité temporaire
+        # du service. Les autres erreurs HTTP sont remontées immédiatement.
+        if response.status_code != 503:
+            response.raise_for_status()
+            return response
+
+        print(
+            f"API Hub'Eau temporairement indisponible (503) "
+            f"- tentative {tentative}/{max_retries}"
+        )
+
+        # Attente progressive : 2 s, puis 4 s, puis 6 s.
+        time.sleep(tentative * 2)
+
+    # Si toutes les tentatives ont échoué, on conserve
+    # le comportement normal de requests en remontant l'erreur HTTP.
+    response.raise_for_status()
 
 
 def fetch_hubeau_data(
@@ -51,8 +88,7 @@ def fetch_hubeau_data(
     if code_parametre is not None:
         params["code_parametre"] = code_parametre
 
-    response = requests.get(BASE_URL, params=params)
-    response.raise_for_status()
+    response = get_with_retry(BASE_URL, params=params)
 
     data = response.json()
 
@@ -60,8 +96,7 @@ def fetch_hubeau_data(
     next_url = data["next"]
 
     while next_url:
-        response = requests.get(next_url)
-        response.raise_for_status()
+        response = get_with_retry(next_url)
 
         data_page = response.json()
 
