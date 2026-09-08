@@ -1,0 +1,170 @@
+version: 2
+
+models:
+  - name: fact_resultats
+    description: >
+      Table de faits contenant les résultats des analyses de qualité de l'eau.
+      Le grain du modèle est d'une ligne par résultat d'un paramètre donné,
+      pour un prélèvement donné et un lieu d'analyse donné. Les attributs
+      du prélèvement permettent les analyses temporelles, géographiques
+      et par installation.
+
+    columns:
+
+      # -----------------------------------------------------------------------
+      # Grain du résultat
+      # -----------------------------------------------------------------------
+
+      - name: code_prelevement
+        description: >
+          Code du prélèvement auquel appartient le résultat.
+        data_tests:
+          - not_null
+
+      - name: code_parametre
+        description: >
+          Code du paramètre analysé. Il permet de relier le résultat
+          à la dimension des paramètres.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_parametre')
+                field: code_parametre
+
+      - name: code_lieu_analyse
+        description: >
+          Code du lieu d'analyse. Il participe avec code_prelevement
+          et code_parametre à la définition du grain du résultat.
+        data_tests:
+          - not_null
+
+      - name: reference_analyse
+        description: >
+          Référence de l'analyse fournie par la source. Cette valeur
+          peut être NULL et ne constitue pas une clé du résultat.
+
+      # -----------------------------------------------------------------------
+      # Axes d'analyse issus du prélèvement
+      # -----------------------------------------------------------------------
+
+      - name: date_prelevement
+        description: >
+          Date du prélèvement utilisée pour relier le résultat
+          à la dimension calendrier.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date
+
+      - name: date_heure_prelevement
+        description: >
+          Date et heure précises du prélèvement.
+        data_tests:
+          - not_null
+
+      - name: code_commune
+        description: >
+          Code de la commune associée au prélèvement.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_geographie')
+                field: code_commune
+
+      - name: code_installation_amont
+        description: >
+          Code de l'installation amont associée au prélèvement.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_installation')
+                field: code_installation_amont
+
+      # -----------------------------------------------------------------------
+      # Résultat de l'analyse
+      # -----------------------------------------------------------------------
+
+      - name: resultat_alphanumerique
+        description: >
+          Représentation alphanumérique du résultat telle que fournie
+          par la source. Elle permet notamment de conserver les valeurs
+          censurées et les résultats non mesurés.
+        data_tests:
+          - not_null
+
+      - name: resultat_numerique
+        description: >
+          Valeur numérique associée au résultat lorsqu'elle est disponible.
+          Elle peut être NULL, notamment pour certains résultats non mesurés.
+
+      - name: operateur_resultat
+        description: >
+          Opérateur extrait du résultat lorsqu'une valeur censurée
+          est exprimée, par exemple "<".
+
+      - name: seuil_resultat
+        description: >
+          Seuil numérique associé à l'opérateur du résultat lorsqu'il existe.
+
+      # -----------------------------------------------------------------------
+      # Limite de qualité
+      # -----------------------------------------------------------------------
+
+      - name: limite_qualite_parametre
+        description: >
+          Expression brute de la limite de qualité applicable au résultat,
+          lorsqu'elle est renseignée dans la source.
+
+      - name: operateur_min_limite_qualite
+        description: >
+          Opérateur de la borne minimale de la limite de qualité.
+
+      - name: valeur_min_limite_qualite
+        description: >
+          Valeur de la borne minimale de la limite de qualité.
+
+      - name: operateur_max_limite_qualite
+        description: >
+          Opérateur de la borne maximale de la limite de qualité.
+
+      - name: valeur_max_limite_qualite
+        description: >
+          Valeur de la borne maximale de la limite de qualité.
+
+      - name: unite_limite_qualite
+        description: >
+          Unité associée à la limite de qualité.
+
+      # -----------------------------------------------------------------------
+      # Référence de qualité
+      # -----------------------------------------------------------------------
+
+      - name: reference_qualite_parametre
+        description: >
+          Expression brute de la référence de qualité applicable au résultat,
+          lorsqu'elle est renseignée dans la source.
+
+      - name: operateur_min_reference_qualite
+        description: >
+          Opérateur de la borne minimale de la référence de qualité.
+
+      - name: valeur_min_reference_qualite
+        description: >
+          Valeur de la borne minimale de la référence de qualité.
+
+      - name: operateur_max_reference_qualite
+        description: >
+          Opérateur de la borne maximale de la référence de qualité.
+
+      - name: valeur_max_reference_qualite
+        description: >
+          Valeur de la borne maximale de la référence de qualité.
+
+      - name: unite_reference_qualite
+        description: >
+          Unité associée à la référence de qualité.
