@@ -1,111 +1,165 @@
 # Hub'Eau Data Pipeline
 
-Pipeline Data Analytics Engineering construit à partir de l'API publique **Hub'Eau - Qualité de l'eau potable**.
+Pipeline **Data Analytics Engineering** construit à partir de l'API publique **Hub'Eau - Qualité de l'eau potable**.
 
-Le projet met en œuvre une chaîne de données complète allant de l'extraction API, la modélisation décisionnelle jusqu'à la visualisation Power BI :
+L'objectif du projet est de construire une chaîne de données de bout en bout permettant d'extraire, structurer, fiabiliser et modéliser les données de qualité de l'eau potable afin de préparer leur exploitation analytique dans **Power BI**.
+
+Le périmètre actuel porte sur la commune d'**Orléans** et couvre **12 paramètres physico-chimiques et microbiologiques**, soit **19 923 résultats d'analyse** sur une période allant de **2016 à 2026**.
+
+Le projet met en œuvre une architecture combinant :
+
+**Python · API REST · BigQuery · SQL · dbt · tests automatisés · modélisation décisionnelle · Git/GitHub · Power BI**
+
+---
+
+## 🚀 Vue d'ensemble
 
 ```text
 Hub'Eau API
      │
      ▼
 Python
-Extraction, pagination, préparation des données
+Extraction multi-paramètres, pagination,
+préparation et chargement
      │
      ▼
 BigQuery RAW
-hubeau_raw.resultats_dis_raw
+19 923 résultats · 32 champs
      │
      ▼
-dbt Cloud ◄────────► GitHub
-     │               Versionnement
-     │               des modèles dbt
+dbt Cloud  ◄────────────────────► GitHub
+     │                             Versionnement
      ▼
-STG → ODS → DIM → FACT
+STG
+     │
+     ▼
+ODS
+├── Prélèvements
+├── Résultats
+└── Prélèvements × Réseaux
+     │
+     ▼
+Modèle analytique
+├── 5 DIM
+├── 2 FACT
+└── 1 BRIDGE
      │
      ▼
 BigQuery
-Stockage des modèles dbt matérialisés
+Modèles dbt matérialisés
      │
      ▼
 Power BI
-KPI, analyses et tableaux de bord
+KPI · analyses · tableaux de bord
+[prochaine phase]
 ```
 
-## État actuel du projet
+Le pipeline d'ingestion, les couches de transformation dbt et le **modèle analytique DIM / FACT / BRIDGE** sont construits et testés.
 
-### ✅ Opérationnel et validé
+La prochaine phase du projet concerne la définition des KPI et la restitution dans Power BI.
+
+---
+
+## 📐 Schéma analytique
+
+La modélisation ne repose pas uniquement sur la structure technique de la source : les **grains métier, clés, cardinalités et relations** ont été étudiés avant la construction des tables analytiques.
+
+Le modèle final distingue notamment :
+
+- les **prélèvements** ;
+- les **résultats d'analyse** ;
+- les **paramètres mesurés** ;
+- les dimensions temporelle, géographique et installation ;
+- les **réseaux de distribution** ;
+- la relation plusieurs-à-plusieurs entre prélèvements et réseaux.
+
+La documentation dédiée présente les dépendances dbt, le modèle analytique final, les cardinalités et les principales décisions de modélisation :
+
+➡️ **[Consulter le schéma analytique et les décisions de modélisation](docs/schema_analytics/schema_analytics.md)**
+
+Architecture analytique construite :
+
+```text
+DIMENSIONS                         TABLES DE FAITS
+
+dim_date ─────────────────────┬──► fact_prelevements
+dim_geographie ───────────────┤
+dim_installation ─────────────┘
+
+dim_date ─────────────────────┬──► fact_resultats
+dim_geographie ───────────────┤
+dim_installation ─────────────┤
+dim_parametre ────────────────┘
+
+
+fact_prelevements
+        │
+        │ 1:N
+        ▼
+bridge_prelevements_reseaux
+        ▲
+        │ N:1
+        │
+dim_reseau
+```
+
+La table de pont permet de représenter la relation **N:N entre prélèvements et réseaux** sans dupliquer les lignes des tables de faits.
+
+---
+
+## ✅ État actuel du projet
+
+### Pipeline et modèle analytique construits
 
 - extraction des données depuis l'API Hub'Eau avec **Python** ;
+- ingestion de **12 paramètres** de qualité de l'eau ;
 - gestion automatique de la pagination ;
-- chargement des données RAW dans **Google BigQuery** ;
+- gestion des erreurs temporaires de l'API ;
+- construction d'un DataFrame RAW ;
+- chargement de **19 923 résultats × 32 champs** dans **Google BigQuery** ;
+- conservation de la structure imbriquée `reseaux` dans la RAW ;
 - tests Python avec **pytest** ;
 - intégration **GitHub ↔ dbt Cloud ↔ BigQuery** ;
-- couche **STAGING**, avec ses tests et documentations, construite et testée ;
-- couche **ODS / Intermediate**, avec ses tests et documentations, construite et testée ;
-- traitement spécifique de la structure imbriquée `reseaux` ;
-- couche **DIM**, avec ses tests et documentations, construite et testée ;
-- tests dbt génériques et test métier personnalisé sur le grain des relations analyse × réseau.
+- construction et validation de la couche **STAGING** ;
+- construction et validation de la couche **ODS / Intermediate** ;
+- définition et contrôle des grains métier ;
+- traitement des résultats numériques, censurés et non mesurés ;
+- structuration des limites et références de qualité ;
+- traitement spécifique de la relation prélèvement × réseau ;
+- construction et validation de **5 dimensions** ;
+- construction et validation de **2 tables de faits** ;
+- construction d'une **table de pont** pour la relation prélèvement ↔ réseau ;
+- tests dbt génériques, tests de relations et tests SQL personnalisés de grain ;
+- documentation de l'exploration, des décisions de modélisation et du schéma analytique.
 
-Architecture dbt actuellement disponible :
+### 🚧 Prochaine phase
 
-```text
-hubeau_raw
-└── resultats_dis_raw
-        │
-        ▼
-hubeau_stg
-└── stg_resultats_dis , avec ses tests et documentations
-        │
-        ▼
-hubeau_ods
-├── int_prelevements , avec ses tests et documentations
-├── int_resultats , avec ses tests et documentations
-└── int_analyses_reseaux , avec ses tests et documentations
-        │
-        ▼
-hubeau_dim
-├── dim_date , avec ses tests et documentations
-├── dim_geographie , avec ses tests et documentations
-├── dim_parametre , avec ses tests et documentations
-├── dim_installation , avec ses tests et documentations
-└── dim_reseau , avec ses tests et documentations
-```
+La prochaine étape concerne la couche de restitution :
 
-### 🚧 Reste à construire
-
-```text
-FACT
-   │
-   ▼
-KPI
-   │
-   ▼
-Visualisations Power BI
-```
-
-Les prochaines étapes sont donc :
-
-1. concevoir la ou les tables de faits ;
-2. définir les mesures et KPI ;
-3. mettre en place les relations du modèle analytique final ;
-4. connecter Power BI à BigQuery ;
-5. construire et documenter les tableaux de bord.
+1. définir les KPI de qualité de l'eau ;
+2. définir les mesures analytiques ;
+3. connecter **Power BI** aux modèles analytiques BigQuery ;
+4. construire les visualisations ;
+5. construire le tableau de bord ;
+6. documenter les indicateurs.
 
 ---
 
 ## 👤 Auteur
 
-**Hadad Amed**
+**Hadad Ahmed**
 
-En début de carrière et actuellement en recherche d'emploi dans le domaine de la Data, je développe ce projet afin de mettre en pratique une architecture orientée **Data Analytics Engineering** combinant :
+En début de carrière et actuellement en recherche d'emploi dans le domaine de la Data, je développe ce projet afin de mettre en pratique une architecture orientée **Data Analytics Engineering** sur un cas d'usage réel et des données publiques.
 
-**Python, API, BigQuery, SQL, dbt, tests, modélisation décisionnelle, qualité des données et Power BI.**
+Le projet mobilise notamment :
+
+**Python, API REST, BigQuery, SQL, dbt, Git/GitHub, tests automatisés, qualité des données, modélisation décisionnelle et Power BI.**
 
 ---
 
 # Source de données
 
-Le projet utilise l'API publique **Hub'Eau - Qualité de l'eau potable**.
+Le projet utilise l'API publique **Hub'Eau – Qualité de l'eau potable**.
 
 Endpoint utilisé :
 
@@ -113,26 +167,38 @@ Endpoint utilisé :
 qualite_eau_potable/resultats_dis
 ```
 
-Périmètre actuel :
+## Périmètre actuel
 
-| Paramètre | Valeur | Description |
-|---|---:|---|
-| `code_commune` | `45234` | Orléans |
-| `code_parametre` | `1340` | Nitrates |
+Le périmètre porte actuellement sur :
 
-Ce périmètre volontairement restreint permet de construire et valider l'architecture sur un jeu de données maîtrisé avant une éventuelle extension à d'autres communes ou paramètres.
+```text
+Commune : Orléans
+Code commune : 45234
+Nombre de paramètres : 12
+Nombre de résultats : 19 923
+Période couverte : 2016 → 2026
+```
 
-Lors d'une exécution de validation :
+Les 12 paramètres sélectionnés couvrent des mesures **physico-chimiques et microbiologiques** :
 
-| Contrôle | Résultat |
-|---|---:|
-| Nombre de lignes RAW | 311 |
-| Nombre de champs | 32 |
-| `reference_analyse` distinctes | 311 |
-| Date minimale | 2016-01-13 |
-| Date maximale | 2026-06-19 |
+| Code | Paramètre | Unité |
+|---:|---|---|
+| `1295` | Turbidité | NFU |
+| `1301` | Température | °C |
+| `1302` | pH | unité pH |
+| `1303` | Conductivité | µS/cm |
+| `1335` | Ammonium | mg/L |
+| `1339` | Nitrites | mg/L |
+| `1340` | Nitrates | mg/L |
+| `1393` | Fer | µg/L |
+| `1394` | Manganèse | µg/L |
+| `1398` | Chlore libre | mg(Cl2)/L |
+| `1449` | Escherichia coli | n/(100mL) |
+| `6455` | Entérocoques | n/(100mL) |
 
-Ces valeurs correspondent à une exécution donnée et peuvent évoluer lorsque de nouvelles analyses sont publiées par Hub'Eau.
+Cette extension multi-paramètres permet de travailler sur des problématiques qui ne seraient pas visibles avec un seul indicateur : unités différentes, résultats censurés, valeurs non mesurées, lieux d'analyse et seuils de qualité variables.
+
+Le périmètre géographique reste volontairement limité à Orléans afin de développer et valider l'architecture analytique avant une éventuelle extension géographique.
 
 ---
 
@@ -141,6 +207,7 @@ Ces valeurs correspondent à une exécution donnée et peuvent évoluer lorsque 
 ```text
                     ┌─────────────────────┐
                     │   API Hub'Eau       │
+                    │  12 paramètres      │
                     └──────────┬──────────┘
                                │
                                ▼
@@ -149,6 +216,7 @@ Ces valeurs correspondent à une exécution donnée et peuvent évoluer lorsque 
                     │                     │
                     │ - requêtes HTTP     │
                     │ - pagination        │
+                    │ - gestion erreurs   │
                     │ - DataFrame RAW     │
                     └──────────┬──────────┘
                                │
@@ -165,11 +233,20 @@ Ces valeurs correspondent à une exécution donnée et peuvent évoluer lorsque 
                     │      dbt Cloud      │
                     │                     │
                     │ - staging           │
-                    │ - ODS / intermediate│
+                    │ - ODS               │
                     │ - dimensions        │
                     │ - facts             │
+                    │ - bridge            │
                     │ - tests             │
                     │ - documentation     │
+                    └──────────┬──────────┘
+                               │
+                               ▼
+                    ┌─────────────────────┐
+                    │      BigQuery       │
+                    │                     │
+                    │ Modèle analytique   │
+                    │ DIM / FACT / BRIDGE │
                     └──────────┬──────────┘
                                │
                                ▼
@@ -179,6 +256,8 @@ Ces valeurs correspondent à une exécution donnée et peuvent évoluer lorsque 
                     │ - KPI               │
                     │ - analyses          │
                     │ - dashboards        │
+                    │                     │
+                    │  Prochaine phase    │
                     └─────────────────────┘
 ```
 
@@ -214,19 +293,22 @@ Le point d'entrée du pipeline est :
 src/run_ingestion.py
 ```
 
-Son exécution orchestre :
+L'ingestion parcourt les **12 paramètres sélectionnés**, récupère les différentes pages de résultats puis construit un DataFrame unique avant le chargement dans BigQuery.
 
 ```text
 python src/run_ingestion.py
           │
           ▼
-fetch_hubeau_data()
+12 paramètres
           │
           ▼
-Pagination Hub'Eau
+Requêtes API Hub'Eau
           │
           ▼
-build_raw_dataframe()
+Pagination
+          │
+          ▼
+19 923 résultats
           │
           ▼
 DataFrame pandas
@@ -245,17 +327,11 @@ Le pipeline est volontairement **déclenché manuellement**.
 
 Dans le cadre de ce projet personnel, aucune exécution horaire ou quotidienne n'est planifiée afin de garder le contrôle sur les traitements et d'éviter une orchestration inutile à ce stade.
 
-Une exécution validée a notamment produit :
+La table RAW actuellement utilisée pour la modélisation contient :
 
 ```text
-Début de l'ingestion Hub'Eau...
-Nombre de résultats récupérés : 311
-DataFrame créé : 311 lignes × 32 colonnes
-Chargement vers BigQuery...
-Table BigQuery chargée :
-project-3665c0d5-5952-473b-82e.hubeau_raw.resultats_dis_raw
-Nombre de lignes dans BigQuery : 311
-Pipeline d'ingestion terminé.
+19 923 lignes
+32 champs
 ```
 
 ---
@@ -264,14 +340,14 @@ Pipeline d'ingestion terminé.
 
 Les tests automatisés utilisent **pytest**.
 
-Ils couvrent actuellement :
+Ils couvrent notamment :
 
 - la construction du DataFrame RAW ;
 - l'extraction Hub'Eau avec API simulée ;
 - la pagination ;
 - le chargement BigQuery avec client simulé ;
 - la destination BigQuery ;
-- `WRITE_TRUNCATE` ;
+- la configuration `WRITE_TRUNCATE` ;
 - l'attente de la fin du job de chargement.
 
 Exécution :
@@ -280,7 +356,7 @@ Exécution :
 python -m pytest tests/ -v
 ```
 
-État actuel :
+État validé :
 
 ```text
 4 tests passed
@@ -316,11 +392,11 @@ reseaux              ARRAY<STRUCT<...>>
 
 Le champ imbriqué `reseaux` est volontairement conservé dans sa structure native dans la couche RAW.
 
-Il est ensuite traité dans dbt afin d'éviter de modifier artificiellement le grain des résultats d'analyse.
+Son éclatement est effectué ultérieurement dans dbt, dans un modèle dédié, afin de ne pas modifier artificiellement le grain des résultats.
 
 ---
 
-# Organisation des datasets BigQuery
+# Organisation des modèles dans BigQuery
 
 ```text
 project-3665c0d5-5952-473b-82e
@@ -329,18 +405,33 @@ project-3665c0d5-5952-473b-82e
 │   └── resultats_dis_raw
 │
 ├── hubeau_stg
+│   └── stg_resultats_dis
+│
 ├── hubeau_ods
+│   ├── int_prelevements
+│   ├── int_resultats
+│   └── int_prelevements_reseaux
+│
 ├── hubeau_dim
+│   ├── dim_date
+│   ├── dim_geographie
+│   ├── dim_installation
+│   ├── dim_parametre
+│   └── dim_reseau
+│
 └── hubeau_fact
+    ├── fact_prelevements
+    ├── fact_resultats
+    └── bridge_prelevements_reseaux
 ```
 
 | Couche | Dataset BigQuery | Rôle |
 |---|---|---|
 | RAW | `hubeau_raw` | Données proches de la source |
-| STG | `hubeau_stg` | Nettoyage léger et conservation du grain source |
-| ODS / Intermediate | `hubeau_ods` | Structuration métier et préparation analytique |
-| DIM | `hubeau_dim` | Dimensions décisionnelles |
-| FACT | `hubeau_fact` | Mesures et faits analytiques |
+| STG | `hubeau_stg` | Conservation et standardisation légère du grain source |
+| ODS / Intermediate | `hubeau_ods` | Structuration et fiabilisation des objets métier |
+| DIM | `hubeau_dim` | Dimensions du modèle analytique |
+| FACT / BRIDGE | `hubeau_fact` | Tables de faits et relations analytiques |
 
 ---
 
@@ -352,20 +443,47 @@ Le projet dbt est intégré directement au repository :
 hubeau-data-pipeline/dbt/
 ```
 
+La modélisation suit la chaîne :
+
+```text
+RAW
+ │
+ ▼
+STG
+ │
+ ├──────────────┬────────────────────┐
+ ▼              ▼                    ▼
+Prélèvements   Résultats     Prélèvements × Réseaux
+       ODS / Intermediate
+ │              │                    │
+ ▼              ▼                    ▼
+DIM            FACT                BRIDGE
+```
+
+Les grains métier sont définis explicitement avant la construction des modèles analytiques.
+
+---
+
 ## Couche STAGING
 
 ### `stg_resultats_dis`
 
-Le modèle staging conserve les **32 champs** de la RAW et reste volontairement proche de la source.
+**Grain :**
+
+```text
+1 ligne = 1 résultat brut retourné par l'API Hub'Eau
+```
+
+Le staging conserve les **32 champs** de la RAW et reste volontairement proche de la source.
 
 Principes :
 
-- conservation du grain observé ;
+- conservation du grain source ;
 - absence de transformation métier lourde ;
 - conservation des identifiants sous forme de chaînes ;
 - conservation des valeurs `NULL` ;
 - conservation simultanée de `resultat_alphanumerique` et `resultat_numerique` ;
-- conservation de `reseaux` sous forme d'ARRAY.
+- conservation de `reseaux` sous forme d'`ARRAY`.
 
 Le modèle est matérialisé en **VIEW**.
 
@@ -373,7 +491,7 @@ Le modèle est matérialisé en **VIEW**.
 
 # Couche ODS / Intermediate
 
-Trois modèles intermédiaires ont été construits.
+La couche ODS structure les données autour de trois objets métier distincts.
 
 ## `int_prelevements`
 
@@ -383,18 +501,20 @@ Trois modèles intermédiaires ont été construits.
 1 ligne = 1 prélèvement identifié par code_prelevement
 ```
 
-Le modèle centralise notamment :
+Le modèle centralise les informations propres au prélèvement, notamment :
 
-- date et heure du prélèvement ;
-- attributs calendaires ;
-- commune et département ;
+- date et heure ;
+- commune ;
 - installation amont ;
-- UGE ;
-- distributeur ;
-- maîtrise d'ouvrage ;
-- informations globales de conformité du prélèvement.
+- informations de conformité du prélèvement.
 
-Les informations propres aux résultats des paramètres restent séparées.
+Les informations propres aux résultats des paramètres restent séparées afin de préserver le grain du prélèvement.
+
+Validation :
+
+```text
+1 914 prélèvements
+```
 
 ---
 
@@ -403,135 +523,113 @@ Les informations propres aux résultats des paramètres restent séparées.
 **Grain :**
 
 ```text
-1 ligne = 1 résultat d'analyse d'un paramètre donné pour un prélèvement
+1 ligne = 1 résultat d'un paramètre donné,
+pour un prélèvement donné et un lieu d'analyse donné
 ```
 
-Le modèle contient notamment :
+Sur le périmètre étudié, la combinaison métier :
 
-- identifiants du prélèvement et de l'analyse ;
-- informations du paramètre ;
+```text
+code_prelevement
++ code_parametre
++ code_lieu_analyse
+```
+
+identifie un résultat sans doublon.
+
+Cette propriété est contrôlée par un test dbt dédié.
+
+Le modèle conserve notamment :
+
+- `code_prelevement` ;
+- `code_parametre` ;
+- `code_lieu_analyse` ;
+- `reference_analyse` ;
 - résultat alphanumérique ;
 - résultat numérique ;
-- unité ;
-- limite de qualité.
+- opérateur et seuil du résultat ;
+- limites de qualité ;
+- références de qualité.
 
-Une attention particulière est portée aux résultats censurés.
+### Valeurs censurées
 
-Exemple source :
-
-```text
-resultat_alphanumerique = "<0,5"
-resultat_numerique      = 0.0
-```
-
-La valeur numérique seule ne permet pas de conserver la sémantique du seuil.
-
-Le modèle dérive donc :
+Un résultat tel que :
 
 ```text
-operateur_resultat = <
-seuil_resultat     = 0.5
+<0,10
 ```
 
-De la même manière :
+ne doit pas être interprété comme une mesure numérique exacte égale à zéro.
+
+Le modèle conserve donc conjointement :
 
 ```text
-limite_qualite_parametre = "<=50 mg/L"
+resultat_alphanumerique
+resultat_numerique
+operateur_resultat
+seuil_resultat
 ```
 
-est structurée en :
+Les valeurs non mesurées telles que :
 
 ```text
-operateur_limite_qualite = <=
-numerique_limite_qualite = 50.0
-unite_limite_qualite     = mg/L
+N.M.
 ```
 
-Les conversions utilisent `SAFE_CAST` afin qu'un format inattendu dans la source ne fasse pas échouer l'ensemble du modèle.
+sont également conservées sans leur attribuer artificiellement une mesure numérique.
+
+Validation :
+
+```text
+19 923 résultats
+```
 
 ---
 
-## `int_analyses_reseaux`
-
-Le champ `reseaux` est un tableau imbriqué dans la source.
-
-Un `UNNEST()` direct dans le modèle principal ferait passer les données de :
-
-```text
-311 analyses
-```
-
-à :
-
-```text
-1837 éléments de réseaux
-```
-
-ce qui modifierait le grain des résultats et pourrait biaiser les agrégations.
-
-Le traitement est donc isolé dans un modèle spécifique.
+## `int_prelevements_reseaux`
 
 **Grain :**
 
 ```text
-1 ligne = 1 association reference_analyse × code_reseau
+1 ligne = 1 association entre un prélèvement et un réseau
 ```
 
-Après déduplication :
+Le tableau imbriqué `reseaux` est éclaté dans ce modèle dédié.
+
+Sur le périmètre étudié, les différents résultats d'un même prélèvement présentent la même configuration de codes réseau. La relation est donc modélisée au niveau du prélèvement plutôt qu'au niveau de chaque résultat.
+
+Le modèle conserve uniquement :
 
 ```text
-781 associations analyse × réseau
-311 analyses
-5 réseaux distincts
+code_prelevement
+code_reseau
 ```
 
-Les variantes de noms d'un même réseau sont conservées dans un `ARRAY`.
+Le champ `debit` n'est pas utilisé comme facteur de pondération : son exploration n'a pas permis de l'interpréter de manière suffisamment fiable comme un poids de répartition entre réseaux.
 
-Le débit reste un attribut de la relation analyse × réseau, car il peut varier entre différentes analyses.
-
-Un test dbt personnalisé vérifie que chaque combinaison :
+Validation :
 
 ```text
-reference_analyse × code_reseau
+5 197 associations prélèvement × réseau
+1 914 prélèvements
+6 réseaux
 ```
-
-n'apparaît qu'une seule fois.
 
 ---
 
 # Dimensions décisionnelles
 
-Cinq dimensions sont actuellement construites.
+Le modèle analytique comporte **5 dimensions**.
 
 ## `dim_date`
 
 **Grain :**
 
 ```text
-1 ligne = 1 date calendaire comprise entre
-le premier et le dernier prélèvement disponibles
+1 ligne = 1 date calendaire
 ```
 
-La dimension génère un calendrier continu avec `GENERATE_DATE_ARRAY`.
-
-Elle contient notamment :
-
-- date ;
-- année ;
-- trimestre ;
-- mois ;
-- nom du mois ;
-- année-mois ;
-- jour ;
-- jour de la semaine ;
-- nom du jour.
-
-Validation actuelle :
-
-```text
-3811 dates
-2016-01-13 → 2026-06-19
-```
+La dimension génère un calendrier continu entre la première et la dernière date de prélèvement et permet les analyses temporelles.
 
 ---
 
@@ -543,43 +641,13 @@ Validation actuelle :
 1 ligne = 1 commune identifiée par code_commune
 ```
 
-Attributs :
+Elle porte notamment :
 
 ```text
 code_commune
 nom_commune
 code_departement
 nom_departement
-```
-
-La dimension permet une future analyse aussi bien au niveau communal qu'au niveau départemental.
-
----
-
-## `dim_parametre`
-
-**Grain :**
-
-```text
-1 ligne = 1 paramètre identifié par code_parametre
-```
-
-Elle regroupe notamment :
-
-- codes métier du paramètre ;
-- code CAS lorsqu'il est disponible ;
-- type de paramètre ;
-- libellés ;
-- unité.
-
-Dans le périmètre actuel :
-
-```text
-code_parametre     = 1340
-code_parametre_se  = NO3
-code_parametre_cas = 14797-55-8
-libelle_parametre  = Nitrates (en NO3)
-unite              = mg/L
 ```
 
 ---
@@ -593,17 +661,29 @@ unite              = mg/L
 par code_installation_amont
 ```
 
-L'exploration a montré qu'un même code d'installation peut conserver son identité alors que son libellé évolue dans le temps.
+L'exploration a montré que le libellé associé à une installation peut évoluer dans le temps sans changement de son code.
 
-Exemple :
+La dimension utilise le code comme clé métier et conserve le libellé observé le plus récemment.
+
+---
+
+## `dim_parametre`
+
+**Grain :**
 
 ```text
-045000762
-2016-2020 → USINE DU VAL ORLEANS
-2021-2026 → USINE DE TRAITEMENT DU VAL ORLEANS
+1 ligne = 1 paramètre identifié par code_parametre
 ```
 
-La dimension conserve donc comme libellé courant le nom associé au prélèvement le plus récent.
+Elle décrit les **12 paramètres** du périmètre et contient notamment :
+
+- codes du paramètre ;
+- code CAS lorsqu'il est disponible ;
+- type de paramètre ;
+- libellés ;
+- unité.
+
+Les limites et références de qualité ne sont pas intégrées comme attributs fixes de cette dimension : leur exploration a montré qu'elles peuvent varier selon les observations.
 
 ---
 
@@ -615,85 +695,206 @@ La dimension conserve donc comme libellé courant le nom associé au prélèveme
 1 ligne = 1 réseau identifié par code_reseau
 ```
 
-Contrairement aux installations, plusieurs variantes de noms d'un même réseau peuvent coexister sur une même période.
+Plusieurs variantes historiques de libellé peuvent être associées à un même code réseau.
 
-Elles sont donc conservées dans un tableau plutôt qu'un libellé choisi arbitrairement.
+La dimension utilise donc `code_reseau` comme clé métier et conserve les différentes variantes de noms observées plutôt que de sélectionner arbitrairement un libellé unique.
 
-Validation actuelle :
-
-```text
-5 réseaux distincts
-```
-
-Exemple :
+Validation :
 
 ```text
-045000474
-├── ORLEANS
-├── ORLEANS-ST JEAN LE BLANC-ST PRYVÉ
-└── ORLEANS-ST JEAN LE BLANC-ST PRYVÉ-ST DENIS EN VAL
+6 réseaux
 ```
 
-Le champ `debit_reseau` n'est volontairement pas intégré à cette dimension car il varie selon les analyses.
+---
+
+# Tables de faits
+
+Le modèle analytique comporte **2 tables de faits**, correspondant à deux grains métier différents.
+
+## `fact_prelevements`
+
+**Grain :**
+
+```text
+1 ligne = 1 prélèvement identifié par code_prelevement
+```
+
+La table contient les attributs nécessaires aux analyses :
+
+- temporelles ;
+- géographiques ;
+- par installation.
+
+Elle porte également les informations de conformité qui concernent le prélèvement dans son ensemble.
+
+Les conserver à ce niveau évite de les dupliquer pour chaque résultat d'analyse.
+
+Validation :
+
+```text
+1 914 prélèvements
+```
+
+---
+
+## `fact_resultats`
+
+**Grain :**
+
+```text
+1 ligne = 1 résultat d'un paramètre donné,
+pour un prélèvement donné et un lieu d'analyse donné
+```
+
+La table permet l'analyse des mesures selon :
+
+- le paramètre ;
+- la date ;
+- la commune ;
+- l'installation ;
+- le lieu d'analyse.
+
+Elle conserve également les différentes représentations du résultat ainsi que les limites et références de qualité applicables à l'observation.
+
+Validation :
+
+```text
+19 923 résultats
+```
+
+`reference_analyse` est conservée comme information source, mais n'est pas utilisée comme clé du résultat car elle peut être `NULL` et n'est pas unique à ce grain.
+
+---
+
+# Table de pont
+
+## `bridge_prelevements_reseaux`
+
+**Grain :**
+
+```text
+1 ligne = 1 association unique entre un prélèvement et un réseau
+```
+
+La relation métier entre les prélèvements et les réseaux est une relation **plusieurs-à-plusieurs** :
+
+```text
+1 prélèvement → plusieurs réseaux
+1 réseau      → plusieurs prélèvements
+```
+
+Ajouter directement `code_reseau` à `fact_prelevements` nécessiterait de répéter un même prélèvement et casserait son grain.
+
+La relation est donc matérialisée par :
+
+```text
+fact_prelevements
+        │
+        │ 1:N
+        ▼
+bridge_prelevements_reseaux
+        ▲
+        │ N:1
+        │
+dim_reseau
+```
+
+Validation :
+
+```text
+5 197 associations prélèvement × réseau
+```
+
+Pour une présentation détaillée des relations, cardinalités et choix de modélisation :
+
+➡️ **[Schéma analytique et décisions de modélisation](docs/schema_analytics/schema_analytics.md)**
 
 ---
 
 # Tests et qualité des données avec dbt
 
-Les modèles dbt utilisent des tests adaptés à leurs contrats métier.
+Les tests dbt sont définis en fonction des **contrats métier** de chaque modèle.
 
-Exemples :
+Ils comprennent notamment :
+
+### Tests génériques
 
 ```text
 not_null
 unique
+relationships
 ```
 
-sur les clés des dimensions et les identifiants structurants.
+Ils permettent notamment de contrôler :
 
-Un test SQL personnalisé protège également le grain de :
+- les clés métier ;
+- les champs structurants ;
+- les relations entre dimensions, faits et bridge.
+
+### Tests SQL personnalisés
+
+Des tests singuliers contrôlent les grains composites qui ne peuvent pas être représentés par un simple test `unique` sur une colonne :
 
 ```text
-int_analyses_reseaux
+test_int_resultats_grain.sql
+test_int_prelevements_reseaux_grain.sql
+test_fact_resultats_grain.sql
+test_bridge_prelevements_reseaux_grain.sql
 ```
 
-en vérifiant l'unicité de :
+Ils vérifient notamment l'unicité des combinaisons :
 
 ```text
-reference_analyse × code_reseau
+code_prelevement
++ code_parametre
++ code_lieu_analyse
 ```
 
-La logique retenue est de tester les **contrats métier importants**, plutôt que d'ajouter mécaniquement des tests sur toutes les colonnes.
+et :
+
+```text
+code_prelevement
++ code_reseau
+```
+
+La logique retenue est de tester les **contrats métier importants** plutôt que d'ajouter mécaniquement des tests sur toutes les colonnes.
 
 ---
 
 # Documentation de la modélisation
 
-L'exploration et les décisions de modélisation sont documentées séparément.
+La documentation est organisée afin de séparer **observation, décision et implémentation**.
 
 ```text
 dbt/docs/
 ├── exploration_modelisation_dbt.md
 └── matrice_colonnes_modelisation_dbt.md
+
+docs/
+└── schema_analytics/
+    └── schema_analytics.md
 ```
 
-### `exploration_modelisation_dbt.md`
+## Exploration des données
 
-Documente les analyses réalisées sur les données :
+`dbt/docs/exploration_modelisation_dbt.md`
 
-- grain ;
-- cardinalités ;
-- valeurs manquantes ;
-- structure de `reseaux` ;
-- valeurs censurées ;
-- conformité ;
-- unités ;
-- installations ;
-- acteurs.
+Documente notamment :
 
-### `matrice_colonnes_modelisation_dbt.md`
+- les grains observés ;
+- les cardinalités ;
+- les valeurs manquantes ;
+- les résultats censurés ;
+- les unités ;
+- les limites et références de qualité ;
+- la structure imbriquée `reseaux` ;
+- les installations et réseaux.
 
-Documente les décisions de modélisation prises pour les **32 champs** de la source :
+## Matrice de modélisation
+
+`dbt/docs/matrice_colonnes_modelisation_dbt.md`
+
+Documente les décisions prises pour les **32 champs de la source** :
 
 - conservation ;
 - transformation ;
@@ -701,14 +902,34 @@ Documente les décisions de modélisation prises pour les **32 champs** de la so
 - rôle analytique ;
 - justification.
 
-Cette séparation permet de distinguer :
+## Schéma analytique
+
+➡️ **[Consulter `schema_analytics.md`](docs/schema_analytics/schema_analytics.md)**
+
+Ce document formalise :
+
+- les dépendances de transformation dbt ;
+- les grains métier ;
+- les clés métier ;
+- les relations et cardinalités ;
+- les dimensions ;
+- les tables de faits ;
+- la table de pont ;
+- les principales décisions de modélisation.
+
+L'organisation documentaire suit ainsi la logique :
 
 ```text
-ce qui a été observé
-        ↓
-ce qui a été décidé
-        ↓
-ce qui a été implémenté dans dbt
+Observation des données
+        │
+        ▼
+Décisions de modélisation
+        │
+        ▼
+Implémentation dbt
+        │
+        ▼
+Modèle analytique documenté
 ```
 
 ---
@@ -721,25 +942,17 @@ Le projet dbt est situé dans :
 hubeau-data-pipeline/dbt/
 ```
 
-Le fichier `dbt_project.yml` configure :
+Le fichier `dbt_project.yml` configure les datasets et matérialisations :
 
 ```text
-models/staging/       → hubeau_stg
-models/intermediate/  → hubeau_ods
-models/dimensions/    → hubeau_dim
-models/facts/         → hubeau_fact
+models/staging/       → hubeau_stg  → VIEW
+models/intermediate/  → hubeau_ods  → TABLE
+models/dimensions/    → hubeau_dim  → TABLE
+models/facts/         → hubeau_fact → TABLE
+models/bridges/       → hubeau_fact → TABLE
 ```
 
-Matérialisations :
-
-```text
-STG           → VIEW
-ODS           → TABLE
-DIM           → TABLE
-FACT          → TABLE
-```
-
-La RAW BigQuery est déclarée dans :
+La source RAW BigQuery est déclarée dans :
 
 ```text
 dbt/models/sources.yml
@@ -785,7 +998,7 @@ et le projet avec :
 dbt parse
 ```
 
-Les modèles sont ensuite construits et testés avec des commandes comme :
+Les modèles peuvent ensuite être construits et testés avec :
 
 ```bash
 dbt build --select nom_du_modele
@@ -797,21 +1010,15 @@ dbt build --select nom_du_modele
 
 ## Ingestion Python
 
-L'ingestion utilise le compte de service :
+L'ingestion repose sur les **Application Default Credentials (ADC)** de Google Cloud.
 
-```text
-hubeau-pipeline@project-3665c0d5-5952-473b-82e.iam.gserviceaccount.com
-```
-
-avec impersonation et **Application Default Credentials**.
-
-Aucune clé JSON permanente de ce compte n'est stockée dans GitHub.
+Aucune clé JSON permanente du compte de service d'ingestion n'est stockée dans GitHub.
 
 ## dbt Cloud
 
 dbt Cloud utilise son propre compte de service BigQuery.
 
-Les droits suivent le principe du moindre privilège :
+Les droits suivent le principe du **moindre privilège** :
 
 ```text
 Projet GCP
@@ -834,7 +1041,7 @@ hubeau_fact
 └── BigQuery Data Editor
 ```
 
-dbt peut donc lire la RAW sans la modifier et écrire uniquement dans les datasets de transformation.
+dbt peut ainsi lire les données RAW et matérialiser les modèles uniquement dans les datasets prévus pour les transformations.
 
 ---
 
@@ -865,21 +1072,11 @@ pip install -r requirements.txt
 gcloud config set project project-3665c0d5-5952-473b-82e
 ```
 
-## 4. Configurer l'impersonation
+## 4. Configurer les Application Default Credentials
 
-```bash
-gcloud config set auth/impersonate_service_account \
-hubeau-pipeline@project-3665c0d5-5952-473b-82e.iam.gserviceaccount.com
-```
+L'environnement local doit disposer d'ADC autorisées à charger les données dans le projet BigQuery.
 
-## 5. Configurer les Application Default Credentials
-
-```bash
-gcloud auth application-default login \
-  --impersonate-service-account=hubeau-pipeline@project-3665c0d5-5952-473b-82e.iam.gserviceaccount.com
-```
-
-## 6. Lancer le pipeline
+## 5. Lancer le pipeline
 
 ```bash
 python src/run_ingestion.py
@@ -917,7 +1114,10 @@ hubeau-data-pipeline/
 │   │   └── matrice_colonnes_modelisation_dbt.md
 │   │
 │   ├── tests/
-│   │   └── test_int_analyses_reseaux_grain.sql
+│   │   ├── test_int_resultats_grain.sql
+│   │   ├── test_int_prelevements_reseaux_grain.sql
+│   │   ├── test_fact_resultats_grain.sql
+│   │   └── test_bridge_prelevements_reseaux_grain.sql
 │   │
 │   └── models/
 │       ├── sources.yml
@@ -931,25 +1131,35 @@ hubeau-data-pipeline/
 │       │   ├── int_prelevements.yml
 │       │   ├── int_resultats.sql
 │       │   ├── int_resultats.yml
-│       │   ├── int_analyses_reseaux.sql
-│       │   └── int_analyses_reseaux.yml
+│       │   ├── int_prelevements_reseaux.sql
+│       │   └── int_prelevements_reseaux.yml
 │       │
 │       ├── dimensions/
 │       │   ├── dim_date.sql
 │       │   ├── dim_date.yml
 │       │   ├── dim_geographie.sql
 │       │   ├── dim_geographie.yml
-│       │   ├── dim_parametre.sql
-│       │   ├── dim_parametre.yml
 │       │   ├── dim_installation.sql
 │       │   ├── dim_installation.yml
+│       │   ├── dim_parametre.sql
+│       │   ├── dim_parametre.yml
 │       │   ├── dim_reseau.sql
 │       │   └── dim_reseau.yml
 │       │
-│       └── facts/
+│       ├── facts/
+│       │   ├── fact_prelevements.sql
+│       │   ├── fact_prelevements.yml
+│       │   ├── fact_resultats.sql
+│       │   └── fact_resultats.yml
+│       │
+│       └── bridges/
+│           ├── bridge_prelevements_reseaux.sql
+│           └── bridge_prelevements_reseaux.yml
 │
 ├── docs/
-│   └── pipeline_hubeau.md
+│   ├── pipeline_hubeau.md
+│   └── schema_analytics/
+│       └── schema_analytics.md
 │
 ├── requirements.txt
 ├── README.md
@@ -963,21 +1173,22 @@ hubeau-data-pipeline/
 ## Phase 1 — API et Python
 
 - [x] Explorer l'API Hub'Eau
-- [x] Identifier le périmètre initial
 - [x] Implémenter l'extraction HTTP
 - [x] Gérer la pagination
-- [x] Construire le DataFrame RAW
 - [x] Structurer le code Python
+- [x] Construire le DataFrame RAW
 - [x] Ajouter les tests unitaires
+- [x] Étendre l'ingestion à 12 paramètres
 
 ## Phase 2 — BigQuery RAW
 
-- [x] Définir le schéma BigQuery
+- [x] Définir explicitement le schéma BigQuery
 - [x] Conserver `reseaux` dans sa structure imbriquée
 - [x] Implémenter le chargement BigQuery
 - [x] Configurer l'authentification GCP
 - [x] Charger et valider la table RAW
 - [x] Tester le loader BigQuery
+- [x] Charger les 19 923 résultats du périmètre multi-paramètres
 
 ## Phase 3 — Infrastructure dbt
 
@@ -986,38 +1197,35 @@ hubeau-data-pipeline/
 - [x] Connecter dbt Cloud à GitHub et BigQuery
 - [x] Configurer les permissions
 - [x] Déclarer la source RAW
-- [x] Valider avec `dbt debug`
-- [x] Valider avec `dbt parse`
+- [x] Valider la connexion et le projet dbt
 
 ## Phase 4 — Exploration et modélisation dbt
 
-- [x] Analyser le grain et les 32 colonnes RAW
+- [x] Analyser le grain et les 32 champs RAW
 - [x] Étudier les cardinalités et valeurs manquantes
-- [x] Étudier le champ imbriqué `reseaux`
-- [x] Étudier les résultats censurés
+- [x] Étudier les résultats censurés et non mesurés
+- [x] Étudier les limites et références de qualité
+- [x] Étudier la structure imbriquée `reseaux`
 - [x] Documenter les décisions de modélisation
-- [x] Construire la couche STG
-- [x] Construire la couche ODS
+- [x] Construire et tester la couche STG
+- [x] Construire et tester la couche ODS
 - [x] Construire `int_prelevements`
 - [x] Construire `int_resultats`
-- [x] Construire `int_analyses_reseaux`
-- [x] Ajouter les tests dbt
-- [x] Construire `dim_date`
-- [x] Construire `dim_geographie`
-- [x] Construire `dim_parametre`
-- [x] Construire `dim_installation`
-- [x] Construire `dim_reseau`
-- [x] Documenter les modèles DIM
-- [ ] Concevoir la ou les tables FACT
-- [ ] Construire les modèles FACT
-- [ ] Ajouter les tests des modèles FACT
-- [ ] Valider le modèle décisionnel final
+- [x] Construire `int_prelevements_reseaux`
+- [x] Construire les 5 dimensions
+- [x] Construire `fact_prelevements`
+- [x] Construire `fact_resultats`
+- [x] Construire `bridge_prelevements_reseaux`
+- [x] Ajouter les tests de relations
+- [x] Ajouter les tests de grains composites
+- [x] Valider le modèle analytique
+- [x] Documenter le schéma analytique, les clés et les cardinalités
 
-## Phase 5 — Analytics / BI
+## Phase 5 — Analytics / Power BI
 
 - [ ] Définir les KPI
 - [ ] Définir les mesures analytiques
-- [ ] Connecter Power BI
+- [ ] Connecter Power BI à BigQuery
 - [ ] Construire les visualisations
 - [ ] Construire le tableau de bord
 - [ ] Documenter les indicateurs
@@ -1028,52 +1236,72 @@ hubeau-data-pipeline/
 
 Le projet suit notamment les principes suivants :
 
-- séparation entre exploration, ingestion, stockage et transformation ;
+- séparation entre ingestion, stockage, transformation et restitution ;
 - couche RAW proche de la donnée source ;
-- schéma BigQuery explicite ;
+- schéma BigQuery défini explicitement ;
 - conservation des structures imbriquées lorsqu'elles ont une valeur métier ;
 - transformations métier réalisées dans dbt ;
 - séparation physique RAW / STG / ODS / DIM / FACT ;
 - définition explicite du grain de chaque modèle ;
-- vérification des données avant de définir une règle de modélisation ;
-- séparation entre attributs d'entité et attributs de relation ;
+- vérification des données avant la définition d'une règle de modélisation ;
+- séparation entre prélèvements et résultats d'analyse ;
+- conservation du lieu d'analyse dans le grain du résultat lorsque nécessaire ;
 - conservation de la sémantique des valeurs censurées ;
+- conservation séparée des limites et références de qualité ;
+- séparation entre attributs d'entité et attributs de relation ;
+- utilisation d'une table de pont pour préserver les grains face à une relation N:N ;
+- absence de pondération par le débit réseau sans justification métier démontrée ;
 - absence de choix arbitraire lorsqu'un identifiant possède plusieurs libellés ;
 - tests ciblés sur les contrats métier importants ;
+- tests de relations entre dimensions, faits et bridge ;
 - principe du moindre privilège pour les accès BigQuery ;
 - composants Python testables indépendamment ;
 - absence de secrets permanents dans Git ;
-- déclenchement manuel maîtrisé ;
-- documentation progressive des décisions techniques et métier ;
+- déclenchement manuel maîtrisé du pipeline ;
+- documentation progressive des observations et décisions ;
 - versionnement Git / GitHub.
 
 ---
 
-# Prochaine étape
+# Prochaine étape — Analytics & Power BI
 
-La prochaine phase du projet est la construction de la couche **FACT**.
-
-Elle devra notamment permettre de relier les résultats d'analyse aux dimensions :
+La couche de données destinée à l'analyse est désormais construite :
 
 ```text
-                    dim_date
-                       │
-                       │
-dim_geographie ───┐    │
-                  │    │
-dim_parametre ────┼── FACT résultats
-                  │
-dim_installation ─┤
-                  │
-dim_reseau ───────┘
+5 dimensions
+     +
+2 tables de faits
+     +
+1 table de pont
+     │
+     ▼
+Modèle analytique BigQuery
+     │
+     ▼
+Power BI
 ```
 
-La conception de cette couche sera pilotée par les futurs besoins analytiques et KPI, afin de déterminer précisément :
+La prochaine phase consiste à exploiter ce modèle pour définir des indicateurs de qualité de l'eau et construire le tableau de bord.
 
-- le grain de la table de faits ;
-- les clés de dimensions ;
-- les mesures ;
-- le traitement des résultats censurés ;
-- le traitement des seuils de qualité ;
-- les relations avec les réseaux ;
-- les indicateurs destinés à Power BI.
+Le travail portera notamment sur :
+
+- la définition des KPI pertinents pour les 12 paramètres ;
+- l'analyse temporelle des mesures ;
+- l'analyse par paramètre ;
+- l'exploitation des limites et références de qualité ;
+- l'analyse de la conformité des prélèvements ;
+- les axes géographiques, installations et réseaux ;
+- le traitement analytique des résultats censurés ;
+- la conception des mesures Power BI ;
+- la construction et la documentation du dashboard final.
+
+La définition des KPI sera réalisée à partir du modèle analytique validé, afin que la couche de restitution exploite des grains et relations déjà contrôlés.
+
+---
+
+## 📚 Documentation complémentaire
+
+- **[Schéma analytique et décisions de modélisation](docs/schema_analytics/schema_analytics.md)**
+- **[Exploration de la modélisation dbt](dbt/docs/exploration_modelisation_dbt.md)**
+- **[Matrice des décisions de modélisation](dbt/docs/matrice_colonnes_modelisation_dbt.md)**
+- **[Documentation générale du pipeline](docs/pipeline_hubeau.md)**
