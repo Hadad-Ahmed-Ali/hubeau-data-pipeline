@@ -1,4 +1,4 @@
-# Documentation technique — Pipeline Hub'Eau
+# Documentation technique - Pipeline Hub'Eau
 
 ## Introduction
 
@@ -61,7 +61,7 @@ Cette séparation permet de distinguer clairement :
 
 ---
 
-# I — Ingestion : API Hub'Eau → Python → BigQuery RAW
+# I - Ingestion : API Hub'Eau → Python → BigQuery RAW
 
 ## 1. Présentation de la source
 
@@ -613,7 +613,7 @@ python -m pytest tests/ -v
 
 ---
 
-# II — Transformation et modélisation : BigQuery RAW → dbt
+# II - Transformation et modélisation : BigQuery RAW → dbt
 
 ## 14. Rôle de dbt
 
@@ -836,7 +836,7 @@ dbt peut donc :
 
 ---
 
-# III — Exploration et décisions de modélisation
+# III - Exploration et décisions de modélisation
 
 ## 20. Principe de conception
 
@@ -1037,7 +1037,7 @@ Aucune pondération analytique n'est donc introduite sans justification métier.
 
 ---
 
-# IV — Couches dbt
+# IV - Couches dbt
 
 ## 26. STAGING — `stg_resultats_dis`
 
@@ -1145,7 +1145,7 @@ Volume :
 
 ---
 
-# V — Modèle analytique
+# V - Modèle analytique
 
 ## 30. Vue générale
 
@@ -1408,7 +1408,7 @@ Pour les cardinalités détaillées :
 
 ---
 
-# VI — Tests et qualité des données
+# VI - Tests et qualité des données
 
 ## 36. Stratégie de tests dbt
 
@@ -1500,7 +1500,7 @@ bridge_prelevements_reseaux.code_reseau
 
 ---
 
-# VII — Documentation de la modélisation
+# VII - Documentation de la modélisation
 
 ## 39. Organisation documentaire
 
@@ -1543,7 +1543,7 @@ Cette séparation évite de mélanger les constats issus des données avec les c
 
 ---
 
-# VIII — Structure du repository
+# VIII - Structure du repository
 
 ## 40. Organisation actuelle
 
@@ -1620,9 +1620,9 @@ hubeau-data-pipeline/
 
 ---
 
-# IX — Roadmap technique
+# IX - Roadmap technique
 
-## Phase 1 — Exploration et ingestion Python
+## Phase 1 - Exploration et ingestion Python
 
 - [x] Étudier l'API Hub'Eau
 - [x] Tester l'endpoint `resultats_dis`
@@ -1637,7 +1637,7 @@ hubeau-data-pipeline/
 
 ---
 
-## Phase 2 — BigQuery RAW
+## Phase 2 - BigQuery RAW
 
 - [x] Créer le dataset `hubeau_raw`
 - [x] Définir un schéma BigQuery explicite
@@ -1653,7 +1653,7 @@ hubeau-data-pipeline/
 
 ---
 
-## Phase 3 — Infrastructure dbt
+## Phase 3 - Infrastructure dbt
 
 - [x] Intégrer dbt au repository
 - [x] Configurer les datasets STG / ODS / DIM / FACT
@@ -1668,7 +1668,7 @@ hubeau-data-pipeline/
 
 ---
 
-## Phase 4 — Exploration et modélisation dbt
+## Phase 4 - Exploration et modélisation dbt
 
 - [x] Analyser les 32 champs RAW
 - [x] Étudier les grains et cardinalités
@@ -1693,7 +1693,7 @@ hubeau-data-pipeline/
 
 ---
 
-## Phase 5 — Analytics / Power BI
+## Phase 5 - Analytics / Power BI
 
 - [ ] Définir les KPI
 - [ ] Définir les mesures analytiques
@@ -1705,7 +1705,7 @@ hubeau-data-pipeline/
 
 ---
 
-# X — Principes techniques du projet
+# X - Principes techniques du projet
 
 Le projet repose sur plusieurs principes.
 
@@ -1762,9 +1762,9 @@ Le projet repose sur plusieurs principes.
 
 ---
 
-# XI — État actuel et prochaine phase
+# XI - État actuel et prochaine phase
 
-## Pipeline Data — construit et validé
+## Pipeline Data - construit et validé
 
 ```text
 Hub'Eau API
@@ -1801,7 +1801,7 @@ testé et documenté
 
 La partie **ingestion → stockage → transformation → modélisation analytique** est désormais construite sur le périmètre actuel.
 
-## Prochaine phase — Analytics & Power BI
+## Prochaine phase : Analytics & Power BI
 
 ```text
 Modèle analytique BigQuery
