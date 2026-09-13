@@ -157,11 +157,18 @@ Pour chacun des quatre axes :
 
 **Taux de conformité = Nombre de prélèvements C / (Nombre de prélèvements C + Nombre de prélèvements N)**
 
-Les statuts `C` et `N` constituent donc le périmètre évaluable du KPI.
+Les statuts `C` et `N` constituent le périmètre évaluable du KPI :
+
+- `C` : prélèvement conforme ;
+- `N` : prélèvement non conforme.
 
 Le statut `S` est conservé comme une catégorie distincte et n'est pas intégré au dénominateur du taux de conformité.
 
-Cette convention analytique est documentée plus en détail dans `reflexion_KPIs.md`.
+Ce choix constitue une **convention analytique prudente**. Lors de l'étude de la documentation publique officielle de l'API Hub'Eau, aucune définition explicite permettant d'associer avec certitude le code `S` à une signification précise n'a été identifiée pour les champs de conformité sanitaire utilisés dans cette analyse.
+
+En conséquence, le statut `S` n'est assimilé ni à un prélèvement conforme (`C`), ni à un prélèvement non conforme (`N`). Il est conservé dans les données mais exclu du calcul du taux afin de ne pas introduire d'interprétation non documentée.
+
+Cette décision et l'exploration ayant conduit à cette règle sont détaillées dans `reflexion_KPIs.md`.
 
 ---
 
@@ -188,7 +195,7 @@ Les quatre cartes KPI restent néanmoins visibles simultanément afin de conserv
 
 ---
 
-## 9. Graphique — Évolution de la conformité
+## 9. Graphique : Évolution de la conformité
 
 Le graphique temporel présente deux informations complémentaires :
 
