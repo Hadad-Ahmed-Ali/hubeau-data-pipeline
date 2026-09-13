@@ -168,7 +168,8 @@ Ce choix constitue une **convention analytique prudente**. Lors de l'étude de l
 
 En conséquence, le statut `S` n'est assimilé ni à un prélèvement conforme (`C`), ni à un prélèvement non conforme (`N`). Il est conservé dans les données mais exclu du calcul du taux afin de ne pas introduire d'interprétation non documentée.
 
-Cette décision et l'exploration ayant conduit à cette règle sont détaillées dans [`reflexion_KPIs.md`](../reflexion_KPIs.md).
+Cette décision et l'exploration ayant conduit à cette règle sont détaillées dans **[`reflexion_KPIs.md`](../reflexion_KPIs.md)**.
+
 ---
 
 ## 8. Évolution temporelle de la conformité
