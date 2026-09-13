@@ -158,14 +158,14 @@ Documentation associée :
 
 - **[Réflexion sur les KPI](Power%20BI/docs/reflexion_KPIs.md)**
 - **[Exploration SQL des règles de qualité](Power%20BI/queries/exploration_regles_qualite.sql)**
-- **[Spécification fonctionnelle — Page 1 : Conformité des prélèvements](Power%20BI/docs/specification_dashboard/page_1_conformite_prelevements.md)**
+- **[Spécification fonctionnelle - Page 1 : Conformité des prélèvements](Power%20BI/docs/specification_dashboard/page_1_conformite_prelevements.md)**
 
 ### 🚧 Prochaines étapes
 
 La suite de la phase Analytics / Power BI consiste à :
 
-1. spécifier la **Page 2 — Dépassements des règles de qualité** ;
-2. spécifier la **Page 3 — Analyse des paramètres** ;
+1. spécifier la **Page 2 : Dépassements des règles de qualité** ;
+2. spécifier la **Page 3 : Analyse des paramètres** ;
 3. connecter **Power BI** au modèle analytique BigQuery ;
 4. implémenter les mesures et règles analytiques ;
 5. construire les visualisations et interactions ;
