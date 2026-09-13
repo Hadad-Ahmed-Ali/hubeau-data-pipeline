@@ -59,18 +59,18 @@ Sur le périmètre étudié, les règles présentes dans les données sont les s
 
 | Paramètre | Limite de qualité | Référence de qualité |
 |---|---|---|
-| Turbidité | — | `<= 2 NFU` |
-| Température | — | `<= 25 °C` |
-| pH | — | `>= 6,5 et <= 9 unité pH` |
-| Conductivité | — | `>= 200 et <= 1100 µS/cm` |
-| Ammonium | — | `<= 0,1 mg/L` |
-| Nitrites | `<= 0,1 mg/L` ou `<= 0,5 mg/L` | — |
-| Nitrates | `<= 50 mg/L` | — |
-| Fer | — | `<= 200 µg/L` |
-| Manganèse | — | `<= 50 µg/L` |
-| Chlore libre | — | — |
-| Escherichia coli | `<= 0 n/(100mL)` | — |
-| Entérocoques | `<= 0 n/(100mL)` | — |
+| Turbidité | null | `<= 2 NFU` |
+| Température | null | `<= 25 °C` |
+| pH | null | `>= 6,5 et <= 9 unité pH` |
+| Conductivité | null | `>= 200 et <= 1100 µS/cm` |
+| Ammonium | null | `<= 0,1 mg/L` |
+| Nitrites | `<= 0,1 mg/L` ou `<= 0,5 mg/L` | null |
+| Nitrates | `<= 50 mg/L` | null |
+| Fer | null | `<= 200 µg/L` |
+| Manganèse | null | `<= 50 µg/L` |
+| Chlore libre | null | null |
+| Escherichia coli | `<= 0 n/(100mL)` | null |
+| Entérocoques | `<= 0 n/(100mL)` | null |
 
 Le chlore libre ne possède donc ni limite ni référence renseignée dans les données du périmètre étudié.
 
@@ -89,7 +89,7 @@ L'exploration montre que ces deux règles sont associées à des installations d
 
 ---
 
-## 4. Question métier 1 — Conformité des prélèvements
+## 4. Question métier 1 - Conformité des prélèvements
 
 ### 4.1 Question
 
@@ -174,7 +174,7 @@ Le filtre **Paramètre** ne doit pas modifier ces indicateurs : la conformité p
 
 ---
 
-## 5. Question métier 2 — Dépassements des règles de qualité
+## 5. Question métier 2 - Dépassements des règles de qualité
 
 ### 5.1 Question
 
@@ -283,7 +283,7 @@ L'analyse par paramètre reste privilégiée par rapport au seul taux global afi
 
 ---
 
-## 6. Question métier 3 — Évolution des paramètres
+## 6. Question métier 3 - Évolution des paramètres
 
 ### 6.1 Question
 
