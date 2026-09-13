@@ -2,7 +2,7 @@
 
 Pipeline **Data Analytics Engineering** construit à partir de l'API publique **Hub'Eau - Qualité de l'eau potable**.
 
-L'objectif du projet est de construire une chaîne de données de bout en bout permettant d'extraire, structurer, fiabiliser et modéliser les données de qualité de l'eau potable afin de préparer leur exploitation analytique dans **Power BI**.
+L'objectif du projet est de construire une chaîne de données de bout en bout permettant d'extraire, structurer, fiabiliser et modéliser les données de qualité de l'eau potable, puis de préparer leur exploitation analytique dans **Power BI**.
 
 Le périmètre actuel porte sur la commune d'**Orléans** et couvre **12 paramètres physico-chimiques et microbiologiques**, soit **19 923 résultats d'analyse** sur une période allant de **2016 à 2026**.
 
@@ -49,14 +49,19 @@ BigQuery
 Modèles dbt matérialisés
      │
      ▼
-Power BI
-KPI · analyses · tableaux de bord
-[prochaine phase]
+Analytics / Power BI
+├── Réflexion KPI
+├── Exploration des règles de qualité
+├── Spécification fonctionnelle du dashboard
+└── Implémentation Power BI
+    [à venir]
 ```
 
 Le pipeline d'ingestion, les couches de transformation dbt et le **modèle analytique DIM / FACT / BRIDGE** sont construits et testés.
 
-La prochaine phase du projet concerne la définition des KPI et la restitution dans Power BI.
+La phase **Analytics / Power BI** est désormais engagée. Les questions métier et les KPI ont été définis à partir du modèle analytique, les règles de qualité ont été explorées et validées en SQL, et la spécification fonctionnelle du dashboard est en cours de construction.
+
+La conception de la **Page 1 - Conformité des prélèvements** est finalisée. Les spécifications des pages suivantes ainsi que l'implémentation dans Power BI constituent les prochaines étapes.
 
 ---
 
@@ -132,16 +137,40 @@ La table de pont permet de représenter la relation **N:N entre prélèvements e
 - tests dbt génériques, tests de relations et tests SQL personnalisés de grain ;
 - documentation de l'exploration, des décisions de modélisation et du schéma analytique.
 
-### 🚧 Prochaine phase
+### Analytics / Power BI : conception en cours
 
-La prochaine étape concerne la couche de restitution :
+La phase de restitution a débuté par un travail de **conception analytique en amont de Power BI** afin de définir les indicateurs avant leur implémentation.
 
-1. définir les KPI de qualité de l'eau ;
-2. définir les mesures analytiques ;
-3. connecter **Power BI** aux modèles analytiques BigQuery ;
-4. construire les visualisations ;
-5. construire le tableau de bord ;
-6. documenter les indicateurs.
+Les travaux réalisés comprennent :
+
+- définition de **3 questions métier** structurant le futur dashboard ;
+- définition des KPI de conformité, de dépassement et d'évolution des paramètres ;
+- distinction analytique entre **limites de qualité** et **références de qualité** ;
+- étude des règles de qualité réellement associées aux résultats Hub'Eau ;
+- validation SQL des règles de dépassement ;
+- définition du traitement analytique des résultats **directs, censurés (`<x`) et non mesurés (`N.M.`)** ;
+- définition des grains et tables sources nécessaires à chaque famille de KPI ;
+- définition des filtres compatibles avec chaque niveau d'analyse ;
+- conception d'une architecture de dashboard en **3 pages analytiques** ;
+- finalisation de la spécification fonctionnelle de la **Page 1 — Conformité des prélèvements**.
+
+Documentation associée :
+
+- **[Réflexion sur les KPI](Power%20BI/docs/reflexion_KPIs.md)**
+- **[Exploration SQL des règles de qualité](Power%20BI/queries/exploration_regles_qualite.sql)**
+- **[Spécification fonctionnelle — Page 1 : Conformité des prélèvements](Power%20BI/docs/specification_dashboard/page_1_conformite_prelevements.md)**
+
+### 🚧 Prochaines étapes
+
+La suite de la phase Analytics / Power BI consiste à :
+
+1. spécifier la **Page 2 — Dépassements des règles de qualité** ;
+2. spécifier la **Page 3 — Analyse des paramètres** ;
+3. connecter **Power BI** au modèle analytique BigQuery ;
+4. implémenter les mesures et règles analytiques ;
+5. construire les visualisations et interactions ;
+6. valider le comportement des filtres et des relations ;
+7. finaliser et documenter le dashboard.
 
 ---
 
@@ -159,7 +188,7 @@ Le projet mobilise notamment :
 
 # Source de données
 
-Le projet utilise l'API publique **Hub'Eau – Qualité de l'eau potable**.
+Le projet utilise l'API publique **Hub'Eau - Qualité de l'eau potable**.
 
 Endpoint utilisé :
 
@@ -251,13 +280,14 @@ Le périmètre géographique reste volontairement limité à Orléans afin de d�
                                │
                                ▼
                     ┌─────────────────────┐
-                    │      Power BI       │
+                    │ Analytics / Power BI│
                     │                     │
-                    │ - KPI               │
-                    │ - analyses          │
-                    │ - dashboards        │
+                    │ - réflexion KPI     │
+                    │ - règles qualité    │
+                    │ - spécifications    │
+                    │ - dashboard         │
                     │                     │
-                    │  Prochaine phase    │
+                    │ Conception en cours │
                     └─────────────────────┘
 ```
 
@@ -1161,6 +1191,15 @@ hubeau-data-pipeline/
 │   └── schema_analytics/
 │       └── schema_analytics.md
 │
+├── Power BI/
+│   ├── docs/
+│   │   ├── reflexion_KPIs.md
+│   │   └── specification_dashboard/
+│   │       └── page_1_conformite_prelevements.md
+│   │
+│   └── queries/
+│       └── exploration_regles_qualite.sql
+│
 ├── requirements.txt
 ├── README.md
 └── .gitignore
@@ -1170,7 +1209,7 @@ hubeau-data-pipeline/
 
 # Roadmap
 
-## Phase 1 — API et Python
+## Phase 1 : API et Python
 
 - [x] Explorer l'API Hub'Eau
 - [x] Implémenter l'extraction HTTP
@@ -1180,7 +1219,7 @@ hubeau-data-pipeline/
 - [x] Ajouter les tests unitaires
 - [x] Étendre l'ingestion à 12 paramètres
 
-## Phase 2 — BigQuery RAW
+## Phase 2 : BigQuery RAW
 
 - [x] Définir explicitement le schéma BigQuery
 - [x] Conserver `reseaux` dans sa structure imbriquée
@@ -1190,7 +1229,7 @@ hubeau-data-pipeline/
 - [x] Tester le loader BigQuery
 - [x] Charger les 19 923 résultats du périmètre multi-paramètres
 
-## Phase 3 — Infrastructure dbt
+## Phase 3 : Infrastructure dbt
 
 - [x] Intégrer dbt au repository
 - [x] Configurer les datasets RAW / STG / ODS / DIM / FACT
@@ -1199,7 +1238,7 @@ hubeau-data-pipeline/
 - [x] Déclarer la source RAW
 - [x] Valider la connexion et le projet dbt
 
-## Phase 4 — Exploration et modélisation dbt
+## Phase 4 : Exploration et modélisation dbt
 
 - [x] Analyser le grain et les 32 champs RAW
 - [x] Étudier les cardinalités et valeurs manquantes
@@ -1221,14 +1260,34 @@ hubeau-data-pipeline/
 - [x] Valider le modèle analytique
 - [x] Documenter le schéma analytique, les clés et les cardinalités
 
-## Phase 5 — Analytics / Power BI
+## Phase 5 : Analytics / Power BI
 
-- [ ] Définir les KPI
-- [ ] Définir les mesures analytiques
-- [ ] Connecter Power BI à BigQuery
+### Conception analytique
+
+- [x] Définir les questions métier du dashboard
+- [x] Définir les familles de KPI
+- [x] Distinguer limites et références de qualité
+- [x] Explorer les règles de qualité dans les données
+- [x] Valider en SQL les règles de dépassement
+- [x] Définir le traitement analytique des résultats censurés et non mesurés
+- [x] Définir les grains et sources des indicateurs
+- [x] Définir l'architecture générale du dashboard en 3 pages
+
+### Spécification fonctionnelle
+
+- [x] Spécifier la Page 1 — Conformité des prélèvements
+- [ ] Spécifier la Page 2 — Dépassements des règles de qualité
+- [ ] Spécifier la Page 3 — Analyse des paramètres
+
+### Implémentation Power BI
+
+- [ ] Connecter Power BI au modèle analytique BigQuery
+- [ ] Implémenter les mesures analytiques
 - [ ] Construire les visualisations
-- [ ] Construire le tableau de bord
-- [ ] Documenter les indicateurs
+- [ ] Configurer les filtres et interactions
+- [ ] Valider le dashboard
+- [ ] Ajouter les captures d'écran du dashboard
+- [ ] Documenter la restitution finale
 
 ---
 
@@ -1263,45 +1322,117 @@ Le projet suit notamment les principes suivants :
 
 ---
 
-# Prochaine étape — Analytics & Power BI
+# Analytics & Power BI
 
-La couche de données destinée à l'analyse est désormais construite :
+La phase de restitution analytique est engagée à partir du modèle décisionnel construit dans BigQuery.
+
+Plutôt que de commencer directement par la création de visualisations, le travail est organisé en plusieurs étapes :
 
 ```text
-5 dimensions
-     +
-2 tables de faits
-     +
-1 table de pont
-     │
-     ▼
 Modèle analytique BigQuery
-     │
-     ▼
-Power BI
+        │
+        ▼
+Questions métier
+        │
+        ▼
+Définition des KPI
+        │
+        ▼
+Exploration et validation SQL
+des règles analytiques
+        │
+        ▼
+Spécification fonctionnelle
+du dashboard
+        │
+        ▼
+Implémentation Power BI
 ```
 
-La prochaine phase consiste à exploiter ce modèle pour définir des indicateurs de qualité de l'eau et construire le tableau de bord.
+## Questions métier
 
-Le travail portera notamment sur :
+Le futur dashboard est structuré autour de trois questions principales :
 
-- la définition des KPI pertinents pour les 12 paramètres ;
-- l'analyse temporelle des mesures ;
-- l'analyse par paramètre ;
-- l'exploitation des limites et références de qualité ;
-- l'analyse de la conformité des prélèvements ;
-- les axes géographiques, installations et réseaux ;
-- le traitement analytique des résultats censurés ;
-- la conception des mesures Power BI ;
-- la construction et la documentation du dashboard final.
+1. **Quel est le niveau de conformité des prélèvements d'eau potable sur le périmètre étudié, et comment évolue-t-il dans le temps ?**
+2. **Quels paramètres présentent des dépassements de limites ou de références de qualité, à quelle fréquence et à quelles périodes ?**
+3. **Comment évoluent les valeurs mesurées des différents paramètres dans le temps, en tenant compte de la nature directe ou censurée des résultats ?**
 
-La définition des KPI sera réalisée à partir du modèle analytique validé, afin que la couche de restitution exploite des grains et relations déjà contrôlés.
+Ces questions conduisent à une architecture de dashboard en trois pages :
+
+```text
+Page 1
+Conformité des prélèvements
+        │
+        ▼
+Page 2
+Dépassements des règles de qualité
+        │
+        ▼
+Page 3
+Analyse des paramètres
+```
+
+Le parcours de lecture suit ainsi une progression allant de la **situation globale** vers l'identification des **dépassements**, puis vers l'analyse détaillée du **comportement des paramètres**.
+
+---
+
+## Travail analytique réalisé
+
+La réflexion sur les KPI définit notamment :
+
+- le grain de chaque indicateur ;
+- sa table source ;
+- sa règle de calcul ;
+- les filtres applicables ;
+- les cas particuliers ;
+- la distinction entre limites et références de qualité ;
+- le traitement des résultats censurés et non mesurés.
+
+➡️ **[Consulter la réflexion sur les KPI](Power%20BI/docs/reflexion_KPIs.md)**
+
+Les règles de qualité présentes dans les données ont ensuite été explorées et contrôlées en SQL avant leur utilisation dans le dashboard.
+
+Cette exploration permet notamment de vérifier les seuils associés aux observations, leur variabilité et le comportement des résultats censurés.
+
+➡️ **[Consulter les requêtes d'exploration des règles de qualité](Power%20BI/queries/exploration_regles_qualite.sql)**
+
+---
+
+## Spécification fonctionnelle du dashboard
+
+La conception du dashboard est documentée **page par page** afin de séparer clairement les différents niveaux d'analyse et de faciliter la lecture de la documentation.
+
+La spécification de la **Page 1 — Conformité des prélèvements** est finalisée.
+
+Elle définit notamment :
+
+- le grain analytique de la page ;
+- les indicateurs de conformité ;
+- les règles de calcul ;
+- les filtres période, installation et réseau ;
+- le comportement du filtrage via la table de pont ;
+- les cartes KPI ;
+- l'analyse temporelle de la conformité ;
+- la navigation annuelle et mensuelle ;
+- la maquette fonctionnelle de la page.
+
+➡️ **[Consulter la spécification fonctionnelle de la Page 1](Power%20BI/docs/specification_dashboard/page_1_conformite_prelevements.md)**
+
+Les spécifications des **Pages 2 et 3** seront ajoutées progressivement avant l'implémentation du dashboard dans Power BI.
 
 ---
 
 ## 📚 Documentation complémentaire
 
+### Modélisation et architecture
+
 - **[Schéma analytique et décisions de modélisation](docs/schema_analytics/schema_analytics.md)**
 - **[Exploration de la modélisation dbt](dbt/docs/exploration_modelisation_dbt.md)**
 - **[Matrice des décisions de modélisation](dbt/docs/matrice_colonnes_modelisation_dbt.md)**
 - **[Documentation générale du pipeline](docs/pipeline_hubeau.md)**
+
+### Analytics / Power BI
+
+- **[Réflexion sur les KPI](Power%20BI/docs/reflexion_KPIs.md)**
+- **[Exploration SQL des règles de qualité](Power%20BI/queries/exploration_regles_qualite.sql)**
+- **[Spécification fonctionnelle - Page 1 : Conformité des prélèvements](Power%20BI/docs/specification_dashboard/page_1_conformite_prelevements.md)**
