@@ -779,15 +779,15 @@ Toutes les cartes et visualisations doivent être recalculées selon le contexte
 
 ```text
 ┌────────────────────────────────────────────────────────────────────┐
-│ PAGE 3 — ANALYSE DES PARAMÈTRES                                   │
+│ PAGE 3 : ANALYSE DES PARAMÈTRES                                    │
 ├────────────────────────────────────────────────────────────────────┤
 │                                                                    │
-│ Période │ Paramètre │ Installation │ Réseau │ Lieu d'analyse      │
+│ Période │ Paramètre │ Installation │ Réseau │ Lieu d'analyse       │
 │             ↑ sélection unique obligatoire                         │
 │                                                                    │
 ├────────────────────────────────────────────────────────────────────┤
 │                                                                    │
-│ Paramètre sélectionné : X                         Unité : X         │
+│ Paramètre sélectionné : X                         Unité : X        │
 │                                                                    │
 │                         X résultats                                │
 │                                                                    │
@@ -798,7 +798,7 @@ Toutes les cartes et visualisations doivent être recalculées selon le contexte
 │ └──────────────────┘ └──────────────────┘ └──────────────────┘     │
 │                                                                    │
 ├────────────────────────────────────────────────────────────────────┤
-│            STATISTIQUES — VALEURS DIRECTES UNIQUEMENT             │
+│            STATISTIQUES : VALEURS DIRECTES UNIQUEMENT              │
 │                                                                    │
 │ ┌──────────────────┐ ┌──────────────────┐ ┌──────────────────┐     │
 │ │     MÉDIANE      │ │     MOYENNE      │ │     MAXIMUM      │     │
@@ -807,17 +807,17 @@ Toutes les cartes et visualisations doivent être recalculées selon le contexte
 │                                                                    │
 ├────────────────────────────────────────────────────────────────────┤
 │                                                                    │
-│              ÉVOLUTION DES VALEURS DIRECTES                       │
+│              ÉVOLUTION DES VALEURS DIRECTES                        │
 │                                                                    │
-│        Courbe → médiane des valeurs directes par période          │
+│        Courbe → médiane des valeurs directes par période           │
 │                                                                    │
-│        Année par défaut → navigation jusqu'au mois                │
+│        Année par défaut → navigation jusqu'au mois                 │
 │                                                                    │
 ├────────────────────────────────────────────────────────────────────┤
 │                                                                    │
-│              ÉVOLUTION DES RÉSULTATS CENSURÉS                     │
+│              ÉVOLUTION DES RÉSULTATS CENSURÉS                      │
 │                                                                    │
-│        Colonnes → nombre de résultats censurés par période        │
+│        Colonnes → nombre de résultats censurés par période         │
 │                                                                    │
 └────────────────────────────────────────────────────────────────────┘
 ```
