@@ -1,4 +1,4 @@
-# Page 2 - Dépassements des règles de qualité
+# Page 2 : Dépassements des règles de qualité
 
 ## 1. Objectif de la page
 
@@ -176,7 +176,7 @@ La sélection d'un paramètre peut conduire à l'absence de règle de qualité �
 
 Ce cas ne doit pas être interprété comme un taux de dépassement égal à zéro.
 
-La règle correspondante est détaillée dans la section **11 — Distinction entre absence de dépassement et absence de règle évaluable**.
+La règle correspondante est détaillée dans la section **11 - Distinction entre absence de dépassement et absence de règle évaluable**.
 
 ---
 
@@ -359,7 +359,7 @@ Il permet uniquement de choisir laquelle est utilisée pour les analyses détail
 
 ---
 
-## 10. Graphique — Dépassements par paramètre
+## 10. Graphique - Dépassements par paramètre
 
 ### 10.1 Objectif
 
@@ -533,7 +533,7 @@ Cette règle évite de transformer une absence d'information analytique en résu
 
 ---
 
-## 12. Graphique — Évolution des dépassements
+## 12. Graphique : Évolution des dépassements
 
 ### 12.1 Objectif
 
@@ -744,7 +744,7 @@ Les choix méthodologiques associés sont détaillés dans [`reflexion_KPIs.md`]
 │ Paramètre A  ████████████████████  X %                            │
 │ Paramètre B  ███████████           X %                            │
 │ Paramètre C  ████                  X %                            │
-│ Paramètre D                         0 %                            │
+│ Paramètre D                        0 %                            │
 │                                                                   │
 │ Infobulle : évaluables · dépassements · taux                      │
 │                                                                   │
@@ -807,4 +807,4 @@ La page doit conserver plusieurs principes analytiques fondamentaux :
 
 La Page 2 constitue ainsi le niveau de **diagnostic des dépassements** du dashboard.
 
-Elle complète la vision globale de la **Page 1 — Conformité des prélèvements** et prépare l'analyse détaillée des valeurs mesurées qui sera développée dans la **Page 3 — Analyse des paramètres**.
+Elle complète la vision globale de la **Page 1 : Conformité des prélèvements** et prépare l'analyse détaillée des valeurs mesurées qui sera développée dans la **Page 3 : Analyse des paramètres**.
