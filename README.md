@@ -1,14 +1,75 @@
 # Hub'Eau Data Pipeline
 
-Pipeline **Data Analytics Engineering** construit à partir de l'API publique **Hub'Eau - Qualité de l'eau potable**.
-
-L'objectif du projet est de construire une chaîne de données de bout en bout permettant d'extraire, structurer, fiabiliser et modéliser les données de qualité de l'eau potable, puis de préparer leur exploitation analytique dans **Power BI**.
+Projet **Data Analytics Engineering** construit à partir de l'API publique **Hub'Eau - Qualité de l'eau potable**, de l'ingestion des données jusqu'à leur restitution dans **Power BI**.
 
 Le périmètre actuel porte sur la commune d'**Orléans** et couvre **12 paramètres physico-chimiques et microbiologiques**, soit **19 923 résultats d'analyse** sur une période allant de **2016 à 2026**.
 
 Le projet met en œuvre une architecture combinant :
 
 **Python · API REST · BigQuery · SQL · dbt · tests automatisés · modélisation décisionnelle · Git/GitHub · Power BI**
+
+---
+
+## 🎯 Objectif analytique
+
+Au-delà de la construction du pipeline de données, le projet vise à **analyser la qualité de l'eau potable sur le périmètre étudié** et à restituer les résultats sous une forme directement exploitable dans Power BI.
+
+L'analyse cherche notamment à répondre à trois questions métier :
+
+1. **Quel est le niveau de conformité des prélèvements d'eau potable et comment évolue-t-il dans le temps ?**
+2. **Quels paramètres présentent des dépassements de limites ou de références de qualité, à quelle fréquence et à quelles périodes ?**
+3. **Comment évoluent les valeurs mesurées des différents paramètres dans le temps, en tenant compte notamment des résultats directs, censurés (`<x`) ou non mesurés (`N.M.`) ?**
+
+Le dashboard est ainsi organisé selon une progression allant de la **situation globale des prélèvements**, vers l'identification des **dépassements des règles de qualité**, puis vers l'**analyse détaillée des paramètres**.
+
+```text
+Page 1
+Conformité des prélèvements
+        │
+        ▼
+Page 2
+Dépassements des règles de qualité
+        │
+        ▼
+Page 3
+Analyse des paramètres
+```
+
+Les **Pages 1 et 2 sont actuellement implémentées** dans Power BI. La Page 3 est en cours de développement.
+
+---
+
+## 📊 Aperçu du dashboard Power BI
+
+### Page 1 — Conformité des prélèvements
+
+Cette première page fournit une vision globale de la conformité des prélèvements selon quatre axes :
+
+- limites bactériologiques ;
+- limites physico-chimiques ;
+- références bactériologiques ;
+- références physico-chimiques.
+
+Elle permet notamment de suivre les **taux de conformité**, les **prélèvements évaluables**, les **non-conformités** et leur **évolution dans le temps**, avec filtrage par période, réseau et installation.
+
+![Dashboard Power BI - Conformité des prélèvements](Power%20BI/screenshots/page_1_conformite_prelevements.png)
+
+### Page 2 — Dépassements des règles de qualité
+
+Cette page analyse les résultats au niveau des paramètres et distingue volontairement les **limites de qualité** des **références de qualité**.
+
+Elle permet d'identifier :
+
+- le nombre de résultats évaluables ;
+- le nombre et le taux de dépassements ;
+- les paramètres concernés ;
+- l'évolution temporelle des dépassements.
+
+Les analyses peuvent être filtrées par période, paramètre, réseau, installation et lieu d'analyse.
+
+![Dashboard Power BI - Dépassements des règles de qualité](Power%20BI/screenshots/page_2_depassements_regles_qualite.png)
+
+> **Page 3 — Analyse des paramètres : en cours de développement.**
 
 ---
 
@@ -49,19 +110,21 @@ BigQuery
 Modèles dbt matérialisés
      │
      ▼
-Analytics / Power BI
-├── Réflexion KPI
-├── Exploration des règles de qualité
-├── Spécification fonctionnelle du dashboard
-└── Implémentation Power BI
-    [à venir]
+Power BI
+├── Modèle relationnel
+├── Mesures DAX
+├── Filtres et interactions
+├── Page 1 · Conformité des prélèvements
+├── Page 2 · Dépassements des règles de qualité
+└── Page 3 · Analyse des paramètres
+    [en cours]
 ```
 
 Le pipeline d'ingestion, les couches de transformation dbt et le **modèle analytique DIM / FACT / BRIDGE** sont construits et testés.
 
-La phase **Analytics / Power BI** est désormais engagée. Les questions métier et les KPI ont été définis à partir du modèle analytique, les règles de qualité ont été explorées et validées en SQL, et la spécification fonctionnelle du dashboard est en cours de construction.
+La phase **Analytics / Power BI** est désormais en cours d'implémentation. Les questions métier et les KPI ont été définis à partir du modèle analytique, les règles de qualité ont été explorées et validées en SQL, et le modèle BigQuery a été intégré dans Power BI.
 
-La conception de la **Page 1 - Conformité des prélèvements** est finalisée. Les spécifications des pages suivantes ainsi que l'implémentation dans Power BI constituent les prochaines étapes.
+Les **Pages 1 — Conformité des prélèvements** et **2 — Dépassements des règles de qualité** sont implémentées et validées. La **Page 3 — Analyse des paramètres** constitue la prochaine étape de la restitution.
 
 ---
 
@@ -137,13 +200,13 @@ La table de pont permet de représenter la relation **N:N entre prélèvements e
 - tests dbt génériques, tests de relations et tests SQL personnalisés de grain ;
 - documentation de l'exploration, des décisions de modélisation et du schéma analytique.
 
-### Analytics / Power BI : conception en cours
+### Analytics / Power BI
 
-La phase de restitution a débuté par un travail de **conception analytique en amont de Power BI** afin de définir les indicateurs avant leur implémentation.
+La phase de restitution a débuté par un travail de **conception analytique en amont de Power BI** afin de définir les indicateurs et leurs règles métier avant leur implémentation.
 
 Les travaux réalisés comprennent :
 
-- définition de **3 questions métier** structurant le futur dashboard ;
+- définition de **3 questions métier** structurant le dashboard ;
 - définition des KPI de conformité, de dépassement et d'évolution des paramètres ;
 - distinction analytique entre **limites de qualité** et **références de qualité** ;
 - étude des règles de qualité réellement associées aux résultats Hub'Eau ;
@@ -152,25 +215,33 @@ Les travaux réalisés comprennent :
 - définition des grains et tables sources nécessaires à chaque famille de KPI ;
 - définition des filtres compatibles avec chaque niveau d'analyse ;
 - conception d'une architecture de dashboard en **3 pages analytiques** ;
-- finalisation de la spécification fonctionnelle de la **Page 1 — Conformité des prélèvements**.
+- spécification fonctionnelle des **3 pages** ;
+- connexion de **Power BI au modèle analytique BigQuery** en mode Import ;
+- construction du modèle relationnel Power BI ;
+- implémentation des mesures DAX et des règles de filtrage ;
+- gestion analytique du filtrage par réseau via la table de pont ;
+- implémentation et validation de la **Page 1 — Conformité des prélèvements** ;
+- implémentation et validation de la **Page 2 — Dépassements des règles de qualité** ;
+- ajout des captures d'écran des pages réalisées.
 
 Documentation associée :
 
 - **[Réflexion sur les KPI](Power%20BI/docs/reflexion_KPIs.md)**
 - **[Exploration SQL des règles de qualité](Power%20BI/queries/exploration_regles_qualite.sql)**
-- **[Spécification fonctionnelle - Page 1 : Conformité des prélèvements](Power%20BI/docs/specification_dashboard/page_1_conformite_prelevements.md)**
+- **[Intégration du modèle BigQuery dans Power BI](Power%20BI/docs/integration_modele_bigquery_power_bi.md)**
+- **[Spécification fonctionnelle — Page 1 : Conformité des prélèvements](Power%20BI/docs/specification_dashboard/page_1_conformite_prelevements.md)**
+- **[Spécification fonctionnelle — Page 2 : Dépassements des règles de qualité](Power%20BI/docs/specification_dashboard/page_2_depassements_regles_qualite.md)**
+- **[Spécification fonctionnelle — Page 3 : Analyse des paramètres](Power%20BI/docs/specification_dashboard/page_3_analyse_parametres.md)**
 
-### 🚧 Prochaines étapes
+### 🚧 Prochaine étape
 
-La suite de la phase Analytics / Power BI consiste à :
+La prochaine étape principale consiste à implémenter la :
 
-1. spécifier la **Page 2 : Dépassements des règles de qualité** ;
-2. spécifier la **Page 3 : Analyse des paramètres** ;
-3. connecter **Power BI** au modèle analytique BigQuery ;
-4. implémenter les mesures et règles analytiques ;
-5. construire les visualisations et interactions ;
-6. valider le comportement des filtres et des relations ;
-7. finaliser et documenter le dashboard.
+**Page 3 — Analyse des paramètres**
+
+Elle doit permettre d'étudier l'évolution des valeurs mesurées tout en distinguant correctement les **valeurs directes**, les **résultats censurés** et les valeurs **non mesurées**.
+
+Une fois cette page finalisée, le dashboard pourra faire l'objet d'une validation globale et d'une dernière mise à jour de la documentation.
 
 ---
 
@@ -280,14 +351,15 @@ Le périmètre géographique reste volontairement limité à Orléans afin de d�
                                │
                                ▼
                     ┌─────────────────────┐
-                    │ Analytics / Power BI│
+                    │      Power BI       │
                     │                     │
-                    │ - réflexion KPI     │
-                    │ - règles qualité    │
-                    │ - spécifications    │
+                    │ - modèle relationnel│
+                    │ - mesures DAX       │
+                    │ - filtres           │
                     │ - dashboard         │
                     │                     │
-                    │ Conception en cours │
+                    │ 2 pages réalisées   │
+                    │ 1 page en cours     │
                     └─────────────────────┘
 ```
 
@@ -308,10 +380,8 @@ Le périmètre géographique reste volontairement limité à Orléans afin de d�
 - **pytest**
 - **Git**
 - **GitHub**
-
-## Prévue pour la restitution
-
 - **Power BI**
+- **DAX**
 
 ---
 
@@ -1194,11 +1264,21 @@ hubeau-data-pipeline/
 ├── Power BI/
 │   ├── docs/
 │   │   ├── reflexion_KPIs.md
+│   │   ├── integration_modele_bigquery_power_bi.md
 │   │   └── specification_dashboard/
-│   │       └── page_1_conformite_prelevements.md
+│   │       ├── page_1_conformite_prelevements.md
+│   │       ├── page_2_depassements_regles_qualite.md
+│   │       └── page_3_analyse_parametres.md
 │   │
-│   └── queries/
-│       └── exploration_regles_qualite.sql
+│   ├── queries/
+│   │   └── exploration_regles_qualite.sql
+│   │
+│   ├── screenshots/
+│   │   ├── page_1_conformite_prelevements.png
+│   │   └── page_2_depassements_regles_qualite.png
+│   │
+│   └── dashboard/
+│       └── hubeau_qualite_eau.pbix
 │
 ├── requirements.txt
 ├── README.md
@@ -1276,18 +1356,21 @@ hubeau-data-pipeline/
 ### Spécification fonctionnelle
 
 - [x] Spécifier la Page 1 — Conformité des prélèvements
-- [ ] Spécifier la Page 2 — Dépassements des règles de qualité
-- [ ] Spécifier la Page 3 — Analyse des paramètres
+- [x] Spécifier la Page 2 — Dépassements des règles de qualité
+- [x] Spécifier la Page 3 — Analyse des paramètres
 
 ### Implémentation Power BI
 
-- [ ] Connecter Power BI au modèle analytique BigQuery
-- [ ] Implémenter les mesures analytiques
-- [ ] Construire les visualisations
-- [ ] Configurer les filtres et interactions
-- [ ] Valider le dashboard
-- [ ] Ajouter les captures d'écran du dashboard
-- [ ] Documenter la restitution finale
+- [x] Connecter Power BI au modèle analytique BigQuery
+- [x] Construire le modèle relationnel Power BI
+- [x] Implémenter les mesures analytiques des Pages 1 et 2
+- [x] Configurer les filtres et interactions des Pages 1 et 2
+- [x] Construire et valider la Page 1 — Conformité des prélèvements
+- [x] Construire et valider la Page 2 — Dépassements des règles de qualité
+- [x] Ajouter les captures d'écran des Pages 1 et 2
+- [ ] Implémenter la Page 3 — Analyse des paramètres
+- [ ] Effectuer la validation globale du dashboard
+- [ ] Finaliser la documentation Power BI
 
 ---
 
@@ -1324,9 +1407,9 @@ Le projet suit notamment les principes suivants :
 
 # Analytics & Power BI
 
-La phase de restitution analytique est engagée à partir du modèle décisionnel construit dans BigQuery.
+La restitution analytique est construite à partir du modèle décisionnel matérialisé dans BigQuery.
 
-Plutôt que de commencer directement par la création de visualisations, le travail est organisé en plusieurs étapes :
+Plutôt que de commencer directement par la création de visualisations, le travail a été organisé selon la chaîne :
 
 ```text
 Modèle analytique BigQuery
@@ -1351,7 +1434,7 @@ Implémentation Power BI
 
 ## Questions métier
 
-Le futur dashboard est structuré autour de trois questions principales :
+Le dashboard est structuré autour de trois questions principales :
 
 1. **Quel est le niveau de conformité des prélèvements d'eau potable sur le périmètre étudié, et comment évolue-t-il dans le temps ?**
 2. **Quels paramètres présentent des dépassements de limites ou de références de qualité, à quelle fréquence et à quelles périodes ?**
@@ -1398,27 +1481,50 @@ Cette exploration permet notamment de vérifier les seuils associés aux observa
 
 ---
 
-## Spécification fonctionnelle du dashboard
+## Intégration du modèle dans Power BI
 
-La conception du dashboard est documentée **page par page** afin de séparer clairement les différents niveaux d'analyse et de faciliter la lecture de la documentation.
+Power BI est connecté aux **8 tables analytiques** matérialisées dans BigQuery :
 
-La spécification de la **Page 1 — Conformité des prélèvements** est finalisée.
+- `dim_date`
+- `dim_geographie`
+- `dim_installation`
+- `dim_parametre`
+- `dim_reseau`
+- `fact_prelevements`
+- `fact_resultats`
+- `bridge_prelevements_reseaux`
 
-Elle définit notamment :
+Le modèle est importé en mode **Import**.
 
-- le grain analytique de la page ;
-- les indicateurs de conformité ;
-- les règles de calcul ;
-- les filtres période, installation et réseau ;
-- le comportement du filtrage via la table de pont ;
-- les cartes KPI ;
-- l'analyse temporelle de la conformité ;
-- la navigation annuelle et mensuelle ;
-- la maquette fonctionnelle de la page.
+Les relations dimensions → faits sont conservées en sens unique lorsque cela est possible.
 
-➡️ **[Consulter la spécification fonctionnelle de la Page 1](Power%20BI/docs/specification_dashboard/page_1_conformite_prelevements.md)**
+La relation réseau nécessite un traitement particulier :
 
-Les spécifications des **Pages 2 et 3** seront ajoutées progressivement avant l'implémentation du dashboard dans Power BI.
+```text
+dim_reseau
+     │
+     ▼
+bridge_prelevements_reseaux
+     │
+     ▼
+fact_prelevements
+```
+
+Pour les analyses basées sur `fact_resultats`, le contexte réseau est propagé dans les mesures DAX afin de préserver le modèle analytique sans ajouter de relation physique ambiguë entre les tables de faits.
+
+➡️ **[Consulter la documentation d'intégration BigQuery / Power BI](Power%20BI/docs/integration_modele_bigquery_power_bi.md)**
+
+---
+
+## Spécifications fonctionnelles du dashboard
+
+La conception du dashboard est documentée **page par page** afin de séparer clairement les différents niveaux d'analyse.
+
+- **[Page 1 — Conformité des prélèvements](Power%20BI/docs/specification_dashboard/page_1_conformite_prelevements.md)**
+- **[Page 2 — Dépassements des règles de qualité](Power%20BI/docs/specification_dashboard/page_2_depassements_regles_qualite.md)**
+- **[Page 3 — Analyse des paramètres](Power%20BI/docs/specification_dashboard/page_3_analyse_parametres.md)**
+
+Les Pages 1 et 2 sont actuellement implémentées. La Page 3 est en cours de développement.
 
 ---
 
@@ -1435,4 +1541,7 @@ Les spécifications des **Pages 2 et 3** seront ajoutées progressivement avant 
 
 - **[Réflexion sur les KPI](Power%20BI/docs/reflexion_KPIs.md)**
 - **[Exploration SQL des règles de qualité](Power%20BI/queries/exploration_regles_qualite.sql)**
-- **[Spécification fonctionnelle - Page 1 : Conformité des prélèvements](Power%20BI/docs/specification_dashboard/page_1_conformite_prelevements.md)**
+- **[Intégration du modèle BigQuery dans Power BI](Power%20BI/docs/integration_modele_bigquery_power_bi.md)**
+- **[Spécification fonctionnelle — Page 1](Power%20BI/docs/specification_dashboard/page_1_conformite_prelevements.md)**
+- **[Spécification fonctionnelle — Page 2](Power%20BI/docs/specification_dashboard/page_2_depassements_regles_qualite.md)**
+- **[Spécification fonctionnelle — Page 3](Power%20BI/docs/specification_dashboard/page_3_analyse_parametres.md)**
