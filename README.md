@@ -10,7 +10,7 @@ Le projet met en œuvre une architecture combinant :
 
 ---
 
-## 🎯 Objectif analytique
+## 🎯 Objectif métier
 
 Au-delà de la construction du pipeline de données, le projet vise à **analyser la qualité de l'eau potable sur le périmètre étudié** et à restituer les résultats sous une forme directement exploitable dans Power BI.
 
@@ -23,16 +23,7 @@ L'analyse cherche notamment à répondre à trois questions métier :
 Le dashboard est ainsi organisé selon une progression allant de la **situation globale des prélèvements**, vers l'identification des **dépassements des règles de qualité**, puis vers l'**analyse détaillée des paramètres**.
 
 ```text
-Page 1
-Conformité des prélèvements
-        │
-        ▼
-Page 2
-Dépassements des règles de qualité
-        │
-        ▼
-Page 3
-Analyse des paramètres
+Page 1 - Conformité des prélèvements → Page 2 - Dépassements des règles de qualité → Page 3 - Analyse des paramètres
 ```
 
 Les **Pages 1 et 2 sont actuellement implémentées** dans Power BI. La Page 3 est en cours de développement.
