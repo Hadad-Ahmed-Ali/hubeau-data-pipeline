@@ -23,7 +23,7 @@ L'analyse cherche notamment à répondre à trois questions métier :
 Le dashboard est ainsi organisé selon une progression allant de la **situation globale des prélèvements**, vers l'identification des **dépassements des règles de qualité**, puis vers l'**analyse détaillée des paramètres**.
 
 ```text
-Page 1 - Conformité des prélèvements **➠** Page 2 - Dépassements des règles de qualité **➠** Page 3 - Analyse des paramètres
+Page 1 - Conformité des prélèvements ➔ Page 2 - Dépassements des règles de qualité ➔ Page 3 - Analyse des paramètres
 ```
 
 Les **Pages 1 et 2 sont actuellement implémentées** dans Power BI. La Page 3 est en cours de développement.
