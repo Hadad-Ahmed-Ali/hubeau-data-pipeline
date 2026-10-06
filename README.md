@@ -20,11 +20,9 @@ L'analyse cherche notamment à répondre à trois questions métier :
 2. **Quels paramètres présentent des dépassements de limites ou de références de qualité, à quelle fréquence et à quelles périodes ?**
 3. **Comment évoluent les valeurs mesurées des différents paramètres dans le temps, en tenant compte notamment des résultats directs, censurés (`<x`) ou non mesurés (`N.M.`) ?**
 
-Le dashboard est ainsi organisé selon une progression allant de la **situation globale des prélèvements**, vers l'identification des **dépassements des règles de qualité**, puis vers l'**analyse détaillée des paramètres**.
+Le dashboard est ainsi organisé selon une progression allant de la **situation globale des prélèvements**, vers l'identification des **dépassements des règles de qualité**, puis vers l'**analyse détaillée des paramètres** :
 
-```text
-Page 1 - Conformité des prélèvements ➔ Page 2 - Dépassements des règles de qualité ➔ Page 3 - Analyse des paramètres
-```
+**Page 1 - Conformité des prélèvements ➔ Page 2 - Dépassements des règles de qualité ➔ Page 3 - Analyse des paramètres**
 
 Les **Pages 1 et 2 sont actuellement implémentées** dans Power BI. La Page 3 est en cours de développement.
 
@@ -36,10 +34,7 @@ Les **Pages 1 et 2 sont actuellement implémentées** dans Power BI. La Page 3 e
 
 Cette première page fournit une vision globale de la conformité des prélèvements selon quatre axes :
 
-- limites bactériologiques ;
-- limites physico-chimiques ;
-- références bactériologiques ;
-- références physico-chimiques.
+**Limites bactériologiques, limites physico-chimiques, références bactériologiques et références physico-chimiques.**
 
 Elle permet notamment de suivre les **taux de conformité**, les **prélèvements évaluables**, les **non-conformités** et leur **évolution dans le temps**, avec filtrage par période, réseau et installation.
 
@@ -51,10 +46,7 @@ Cette page analyse les résultats au niveau des paramètres et distingue volonta
 
 Elle permet d'identifier :
 
-- le nombre de résultats évaluables ;
-- le nombre et le taux de dépassements ;
-- les paramètres concernés ;
-- l'évolution temporelle des dépassements.
+**Le nombre de résultats évaluables, le nombre et le taux de dépassements, les paramètres concernés et l'évolution temporelle des dépassements.**
 
 Les analyses peuvent être filtrées par période, paramètre, réseau, installation et lieu d'analyse.
 
