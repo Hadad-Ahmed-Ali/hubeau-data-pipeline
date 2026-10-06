@@ -6,7 +6,7 @@ Le périmètre actuel porte sur la commune d'**Orléans** et couvre **12 paramè
 
 Le projet met en œuvre une architecture combinant :
 
-**Python · API REST · BigQuery · SQL · dbt · tests automatisés · modélisation décisionnelle · Git/GitHub · Power BI**
+**Python • API REST • BigQuery • SQL • dbt • tests automatisés • modélisation décisionnelle • documentation • Git/GitHub • Power BI**
 
 ---
 
@@ -34,7 +34,7 @@ Les **Pages 1 et 2 sont actuellement implémentées** dans Power BI. La Page 3 e
 
 Cette première page fournit une vision globale de la conformité des prélèvements selon quatre axes :
 
-**Limites bactériologiques, limites physico-chimiques, références bactériologiques et références physico-chimiques.**
+**• Limites bactériologiques • limites physico-chimiques • références bactériologiques • références physico-chimiques.**
 
 Elle permet notamment de suivre les **taux de conformité**, les **prélèvements évaluables**, les **non-conformités** et leur **évolution dans le temps**, avec filtrage par période, réseau et installation.
 
@@ -46,7 +46,7 @@ Cette page analyse les résultats au niveau des paramètres et distingue volonta
 
 Elle permet d'identifier :
 
-**Le nombre de résultats évaluables, le nombre et le taux de dépassements, les paramètres concernés et l'évolution temporelle des dépassements.**
+**• Le nombre de résultats évaluables • le nombre et le taux de dépassements • les paramètres concernés • l'évolution temporelle des dépassements.**
 
 Les analyses peuvent être filtrées par période, paramètre, réseau, installation et lieu d'analyse.
 
