@@ -2,9 +2,7 @@
 
 Projet **Data Analytics Engineering** construit à partir de l'API publique **Hub'Eau - Qualité de l'eau potable**, de l'ingestion des données jusqu'à leur restitution dans **Power BI**.
 
-Le périmètre actuel porte sur la commune d'**Orléans** et couvre **12 paramètres physico-chimiques et microbiologiques**, soit **19 923 résultats d'analyse** sur une période allant de **2016 à 2026**.
-
-Le projet met en œuvre une architecture combinant :
+Le périmètre actuel porte sur la commune d'**Orléans** et couvre **12 paramètres physico-chimiques et microbiologiques**, soit **19 923 résultats d'analyse** sur une période allant de **2016 à 2026**. Le projet met en œuvre une architecture combinant :
 
 **Python • API REST • BigQuery • SQL • dbt • tests automatisés • modélisation décisionnelle • documentation • Git/GitHub • Power BI**
 
@@ -34,7 +32,10 @@ Les **Pages 1 et 2 sont actuellement implémentées** dans Power BI. La Page 3 e
 
 Cette première page fournit une vision globale de la conformité des prélèvements selon quatre axes :
 
-**• Limites bactériologiques • limites physico-chimiques • références bactériologiques • références physico-chimiques.**
+- limites bactériologiques
+- limites physico-chimiques
+- références bactériologiques
+- références physico-chimiques
 
 Elle permet notamment de suivre les **taux de conformité**, les **prélèvements évaluables**, les **non-conformités** et leur **évolution dans le temps**, avec filtrage par période, réseau et installation.
 
@@ -46,7 +47,10 @@ Cette page analyse les résultats au niveau des paramètres et distingue volonta
 
 Elle permet d'identifier :
 
-**• Le nombre de résultats évaluables • le nombre et le taux de dépassements • les paramètres concernés • l'évolution temporelle des dépassements.**
+- le nombre de résultats évaluables
+- le nombre et le taux de dépassements
+- les paramètres concernés
+- l'évolution temporelle des dépassements
 
 Les analyses peuvent être filtrées par période, paramètre, réseau, installation et lieu d'analyse.
 
