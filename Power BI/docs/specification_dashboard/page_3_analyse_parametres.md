@@ -305,20 +305,23 @@ Il permet de conserver une vision du volume total d'observations avant d'interpr
 
 ## 8. Nature des résultats
 
-Trois indicateurs présentent la composition des résultats :
+Quatre indicateurs sont présentés horizontalement afin de décrire la nature des résultats du paramètre sélectionné.
 
 ```text
-┌──────────────────┐ ┌──────────────────┐ ┌──────────────────┐
-│ VALEURS DIRECTES │ │    CENSURÉS      │ │      N.M.        │
-│                  │ │                  │ │                  │
-│        X         │ │        X         │ │        X         │
-│                  │ │       X %        │ │                  │
-└──────────────────┘ └──────────────────┘ └──────────────────┘
+┌───────────────────┬───────────────────┬───────────────────┬───────────────────┐
+│ VALEURS DIRECTES  │ RÉSULTATS CENSURÉS│ RÉSULTATS N.M.    │ TAUX DE CENSURE   │
+│                   │                   │                   │                   │
+│        X          │        X          │        X          │       X %         │
+│                   │                   │                   │                   │
+│ Paramètre : X     │ Paramètre : X     │ Paramètre : X     │ Paramètre : X     │
+└───────────────────┴───────────────────┴───────────────────┴───────────────────┘
 ```
 
-Ces indicateurs permettent de déterminer immédiatement quelle proportion des observations est directement quantifiée.
+Les trois premiers indicateurs présentent respectivement le nombre de valeurs directes, de résultats censurés et de résultats non mesurés (`N.M.`).
 
-Cette information est essentielle avant d'interpréter les statistiques descriptives.
+Le quatrième indicateur présente le taux de censure, calculé uniquement sur les valeurs directes et les résultats censurés, conformément à la règle définie dans la section 9.
+
+Cette présentation permet de contextualiser immédiatement les statistiques descriptives affichées dans la zone suivante.
 
 ---
 
@@ -496,31 +499,25 @@ Valeurs directes = 0
 Résultats censurés = X
 ```
 
-Les statistiques descriptives ne doivent pas afficher :
+Les statistiques descriptives ne doivent pas afficher artificiellement une valeur égale à zéro lorsqu'aucune valeur directe n'est disponible.
+
+Elles affichent :
 
 ```text
-Médiane = 0
-Moyenne = 0
-Maximum = 0
+Médiane : Non disponible
+Moyenne : Non disponible
+Maximum : Non disponible
 ```
 
-Elles doivent afficher :
-
-```text
-Médiane : —
-Moyenne : —
-Maximum : —
-```
-
-avec un message fonctionnel explicite :
+Un message explicatif est également présenté dans une zone dédiée, sous le graphique de la médiane :
 
 > **Aucune valeur directe disponible pour la sélection actuelle.**
 
-Il ne faut pas afficher :
+Cette zone est placée en dehors de la surface interactive du graphique afin de préserver les info-bulles et les interactions avec les points de la courbe.
 
-> Aucune donnée disponible.
+Lorsque la sélection ne contient aucun résultat, le message devient :
 
-Des données sont effectivement présentes ; elles ne sont simplement pas disponibles sous forme de valeurs directes utilisables pour ces statistiques.
+> **Aucun résultat disponible pour la sélection actuelle.**
 
 ---
 
@@ -652,49 +649,54 @@ Le taux global de résultats censurés étant déjà disponible dans la zone de 
 
 ---
 
-## 16. Affichage d'une règle de qualité
+## 16. Affichage des règles de qualité
 
-Une règle de qualité peut être utilisée comme contexte visuel sur le graphique temporel uniquement lorsqu'elle peut être représentée sans ambiguïté.
+La Page 3 est consacrée à l'analyse descriptive et temporelle des valeurs directement quantifiées pour un paramètre sélectionné.
 
-### Cas 1 : Règle unique et stable
+L'affichage d'une ligne représentant un seuil de qualité sur le graphique d'évolution de la médiane n'a pas été retenu dans la réalisation finale du dashboard.
 
-Si une seule règle applicable existe dans le contexte filtré, un seuil peut être affiché sur le graphique lorsque sa représentation est compatible avec le type de règle.
+### 16.1 Justification du choix
 
-Exemple conceptuel :
+Les règles de qualité associées aux observations dans les données Hub'Eau peuvent varier selon les résultats.
+
+Dans certaines situations, plusieurs seuils peuvent donc être applicables à un même paramètre sur la période sélectionnée.
+
+Afficher une ligne de seuil unique pourrait laisser penser qu'une seule règle s'applique à l'ensemble des observations, ce qui ne serait pas nécessairement correct.
+
+Par ailleurs, la courbe de la Page 3 représente une médiane calculée sur les valeurs directes d'une période, et non les résultats individuels.
+
+La comparaison de cette médiane à un seuil ne permet donc pas, à elle seule, de déterminer si tous les résultats de la période respectent la règle de qualité.
+
+### 16.2 Présentation retenue dans Power BI
+
+Le graphique principal présente uniquement :
+
+- l'évolution temporelle de la médiane des valeurs directes ;
+- le paramètre sélectionné et son unité ;
+- les informations complémentaires disponibles dans les info-bulles.
+
+Aucune ligne de seuil de qualité n'est affichée sur ce graphique.
+
+### 16.3 Articulation avec la Page 2
+
+L'analyse du respect ou du dépassement des règles de qualité est assurée par la **Page 2 — Dépassements des règles de qualité**.
+
+Cette page évalue les résultats au niveau de chaque observation, en utilisant les règles de qualité qui lui sont associées.
+
+La séparation fonctionnelle retenue est donc :
 
 ```text
-Valeur
- │
- ├──────────────────────── seuil
- │
- │          ●
- │    ●           ●
- │ ●       ●
- │
- └────────────────────────► Temps
+PAGE 2 — DÉPASSEMENTS DES RÈGLES DE QUALITÉ
+    → Classification des résultats selon les règles applicables
+    → Identification des dépassements
+
+PAGE 3 — ANALYSE DES PARAMÈTRES
+    → Analyse descriptive des valeurs directes
+    → Évolution temporelle de la médiane
+    → Suivi des résultats censurés
 ```
 
----
-
-### Cas 2 : Plusieurs seuils applicables
-
-Si plusieurs seuils différents sont applicables aux observations de la sélection, le dashboard ne doit pas tracer artificiellement une ligne unique.
-
-Il peut afficher une information telle que :
-
-> **Plusieurs seuils de qualité sont applicables dans la sélection actuelle.**
-
-Cette règle évite de présenter un seuil unique qui ne correspondrait pas à toutes les observations.
-
----
-
-### Cas 3 : Aucune règle disponible
-
-Lorsqu'aucune règle de qualité n'est disponible pour le paramètre dans la sélection, aucune ligne de seuil n'est affichée.
-
-Cette absence ne doit pas être interprétée comme une absence de contrainte réglementaire générale.
-
-Elle signifie uniquement qu'aucune règle exploitable pour cet affichage n'est disponible dans les données utilisées par le dashboard pour la sélection actuelle.
+Cette organisation permet de distinguer clairement l'analyse réglementaire des résultats et leur analyse statistique, sans introduire d'interprétation trompeuse.
 
 ---
 
@@ -777,49 +779,61 @@ Toutes les cartes et visualisations doivent être recalculées selon le contexte
 
 ## 19. Maquette fonctionnelle simplifiée
 
+La disposition retenue pour la Page 3 est la suivante :
+
 ```text
-┌────────────────────────────────────────────────────────────────────┐
-│ PAGE 3 : ANALYSE DES PARAMÈTRES                                    │
-├────────────────────────────────────────────────────────────────────┤
-│                                                                    │
-│ Période │ Paramètre │ Installation │ Réseau │ Lieu d'analyse       │
-│             ↑ sélection unique obligatoire                         │
-│                                                                    │
-├────────────────────────────────────────────────────────────────────┤
-│                                                                    │
-│ Paramètre sélectionné : X                         Unité : X        │
-│                                                                    │
-│                         X résultats                                │
-│                                                                    │
-│ ┌──────────────────┐ ┌──────────────────┐ ┌──────────────────┐     │
-│ │ VALEURS DIRECTES │ │    CENSURÉS      │ │      N.M.        │     │
-│ │        X         │ │        X         │ │        X         │     │
-│ │                  │ │       X %        │ │                  │     │
-│ └──────────────────┘ └──────────────────┘ └──────────────────┘     │
-│                                                                    │
-├────────────────────────────────────────────────────────────────────┤
-│            STATISTIQUES : VALEURS DIRECTES UNIQUEMENT              │
-│                                                                    │
-│ ┌──────────────────┐ ┌──────────────────┐ ┌──────────────────┐     │
-│ │     MÉDIANE      │ │     MOYENNE      │ │     MAXIMUM      │     │
-│ │    X [unité]     │ │    X [unité]     │ │    X [unité]     │     │
-│ └──────────────────┘ └──────────────────┘ └──────────────────┘     │
-│                                                                    │
-├────────────────────────────────────────────────────────────────────┤
-│                                                                    │
-│              ÉVOLUTION DES VALEURS DIRECTES                        │
-│                                                                    │
-│        Courbe → médiane des valeurs directes par période           │
-│                                                                    │
-│        Année par défaut → navigation jusqu'au mois                 │
-│                                                                    │
-├────────────────────────────────────────────────────────────────────┤
-│                                                                    │
-│              ÉVOLUTION DES RÉSULTATS CENSURÉS                      │
-│                                                                    │
-│        Colonnes → nombre de résultats censurés par période         │
-│                                                                    │
-└────────────────────────────────────────────────────────────────────┘
+┌───────────────────────────────┬───────────────────────────────────────────────────┐
+│ Qualité de l'eau potable      │ Période       Paramètre          Réseau           │
+│ Analyse des paramètres        │               Installation      Lieu d'analyse   │
+├───────────────────────────────┤                                                   │
+│ Résultats analysés : X        │                                                   │
+│ Paramètre : X                 │                                                   │
+└───────────────────────────────┴───────────────────────────────────────────────────┘
+
+┌────────────────────┬────────────────────┬────────────────────┬────────────────────┐
+│ VALEURS DIRECTES   │ RÉSULTATS CENSURÉS │ RÉSULTATS N.M.     │ TAUX DE CENSURE    │
+│                    │                    │                    │                    │
+│ X                  │ X                  │ X                  │ X %                │
+│ Paramètre : X      │ Paramètre : X      │ Paramètre : X      │ Paramètre : X      │
+└────────────────────┴────────────────────┴────────────────────┴────────────────────┘
+
+       ┌────────────────────────┬────────────────────────┬────────────────────────┐
+       │ MÉDIANE                │ MOYENNE                │ MAXIMUM                │
+       │ des valeurs directes   │ des valeurs directes   │ des valeurs directes   │
+       │                        │                        │                        │
+       │ X [unité]              │ X [unité]              │ X [unité]              │
+       │ Paramètre : X          │ Paramètre : X          │ Paramètre : X          │
+       └────────────────────────┴────────────────────────┴────────────────────────┘
+
+┌──────────────────────────────────────┬──────────────────────────────────────┐
+│ ÉVOLUTION ANNUELLE DE LA MÉDIANE     │ ÉVOLUTION ANNUELLE DES RÉSULTATS     │
+│ DES VALEURS DIRECTES                 │ CENSURÉS                             │
+│                                      │                                      │
+│ Paramètre sélectionné : X [unité]    │ Paramètre sélectionné : X [unité]    │
+│                                      │                                      │
+│ Graphique en courbe :                │ Graphique en colonnes :             │
+│ - Médiane des valeurs directes       │ - Nombre de résultats censurés       │
+│ - Axe X : années                     │ - Axe X : années                     │
+│ - Axe Y : médiane des valeurs        │ - Axe Y : nombre de résultats        │
+│            directes                  │            censurés                  │
+│                                      │                                      │
+│ Granularité : Année → Mois           │ Granularité : Année → Mois           │
+└──────────────────────────────────────┴──────────────────────────────────────┘
+```
+
+Cette maquette représente la disposition effective de la Page 3 dans Power BI :
+
+- **Zone supérieure gauche :** titre de la page, nombre de résultats analysés et rappel du paramètre sélectionné.
+- **Zone supérieure droite :** filtres Période, Paramètre, Réseau, Installation et Lieu d'analyse. Le paramètre est sélectionné de manière unique.
+- **Première ligne de KPI :** nombre de valeurs directes, de résultats censurés, de résultats `N.M.` et taux de censure.
+- **Deuxième ligne de KPI :** médiane, moyenne et maximum calculés uniquement sur les valeurs directes, avec affichage dynamique de l'unité.
+- **Zone inférieure gauche :** courbe présentant l'évolution annuelle de la médiane des valeurs directes.
+- **Zone inférieure droite :** graphique en colonnes présentant l'évolution annuelle du nombre de résultats censurés.
+
+Les deux graphiques affichent un sous-titre dynamique rappelant le paramètre sélectionné et son unité.
+
+Les valeurs `X`, `X %` et `X [unité]` représentent des indicateurs dynamiques calculés selon les filtres actifs.
+
 ```
 
 ---
