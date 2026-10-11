@@ -783,17 +783,17 @@ La disposition retenue pour la Page 3 est la suivante :
 
 ```text
 ┌───────────────────────────────┬───────────────────────────────────────────────────┐
-│ Qualité de l'eau potable      │ Période       Paramètre          Réseau           │
-│ Analyse des paramètres        │               Installation      Lieu d'analyse   │
-├───────────────────────────────┤                                                   │
-│ Résultats analysés : X        │                                                   │
+│ Qualité de l'eau potable      │               Paramètre          Réseau           │
+│ Analyse des paramètres        │                                                   │
+├───────────────────────────────┤   Période                                         │
+│ Résultats analysés : X        │              Installation      Lieu d'analyse     │
 │ Paramètre : X                 │                                                   │
 └───────────────────────────────┴───────────────────────────────────────────────────┘
 
 ┌────────────────────┬────────────────────┬────────────────────┬────────────────────┐
 │ VALEURS DIRECTES   │ RÉSULTATS CENSURÉS │ RÉSULTATS N.M.     │ TAUX DE CENSURE    │
 │                    │                    │                    │                    │
-│ X                  │ X                  │ X                  │ X %                │
+│       X            │        X           │        X           │       X %          │
 │ Paramètre : X      │ Paramètre : X      │ Paramètre : X      │ Paramètre : X      │
 └────────────────────┴────────────────────┴────────────────────┴────────────────────┘
 
