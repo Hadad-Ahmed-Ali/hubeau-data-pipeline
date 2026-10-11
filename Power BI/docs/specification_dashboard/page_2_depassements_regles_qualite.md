@@ -408,17 +408,13 @@ Le nombre absolu de dépassements reste ainsi accessible sans surcharger le grap
 
 ### 10.3 Paramètres sans dépassement
 
-Un paramètre disposant de résultats évaluables mais ne présentant aucun dépassement peut être affiché avec :
+Le graphique présente uniquement les paramètres dont le taux de dépassement est strictement supérieur à `0 %`.
 
-```text
-0 %
-```
+Les paramètres disposant de résultats évaluables mais ne présentant aucun dépassement ne sont pas affichés dans cette visualisation.
 
-Dans ce cas, `0 %` signifie explicitement :
+Cette règle permet de concentrer la lecture sur les paramètres concernés par des dépassements, sans assimiler les paramètres non évaluables à des paramètres évalués sans dépassement.
 
-> **Le paramètre a été évalué pour la règle considérée et aucun dépassement n'a été observé.**
-
-Cette situation doit être distinguée d'un paramètre pour lequel aucune règle n'est évaluable.
+L'absence d'un paramètre dans le graphique ne signifie donc pas nécessairement qu'il respecte la règle considérée.
 
 ---
 
@@ -712,65 +708,66 @@ Les choix méthodologiques associés sont détaillés dans [`reflexion_KPIs.md`]
 
 ## 16. Maquette fonctionnelle simplifiée
 
+La disposition retenue pour la Page 2 est la suivante :
+
 ```text
-┌───────────────────────────────────────────────────────────────────┐
-│ PAGE 2 — DÉPASSEMENTS DES RÈGLES DE QUALITÉ                      │
-├───────────────────────────────────────────────────────────────────┤
-│                                                                   │
-│ Période │ Paramètre │ Installation │ Réseau │ Lieu d'analyse     │
-│                                                                   │
-├───────────────────────────────────────────────────────────────────┤
-│                                                                   │
-│                     X résultats analysés                          │
-│                                                                   │
-│ ┌────────────────────────────┐  ┌────────────────────────────┐    │
-│ │ LIMITES DE QUALITÉ         │  │ RÉFÉRENCES DE QUALITÉ     │    │
-│ │                            │  │                            │    │
-│ │          X %               │  │          X %               │    │
-│ │     de dépassement         │  │     de dépassement         │    │
-│ │                            │  │                            │    │
-│ │ X résultats évaluables     │  │ X résultats évaluables     │    │
-│ │ Y dépassements             │  │ Y dépassements             │    │
-│ └────────────────────────────┘  └────────────────────────────┘    │
-│                                                                   │
-├───────────────────────────────────────────────────────────────────┤
-│                                                                   │
-│          [ Limites de qualité │ Références de qualité ]           │
-│                                                                   │
-├───────────────────────────────────────────────────────────────────┤
-│                                                                   │
-│                  DÉPASSEMENTS PAR PARAMÈTRE                       │
-│                                                                   │
-│ Paramètre A  ████████████████████  X %                            │
-│ Paramètre B  ███████████           X %                            │
-│ Paramètre C  ████                  X %                            │
-│ Paramètre D                        0 %                            │
-│                                                                   │
-│ Infobulle : évaluables · dépassements · taux                      │
-│                                                                   │
-├───────────────────────────────────────────────────────────────────┤
-│                                                                   │
-│                  ÉVOLUTION DES DÉPASSEMENTS                       │
-│                                                                   │
-│     Colonnes → nombre de dépassements                             │
-│     Courbe   → taux de dépassement                                │
-│                                                                   │
-│     Année par défaut → navigation jusqu'au mois                   │
-│                                                                   │
-└───────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────┬────────────────────────────────────────────────────┐
+│ Qualité de l'eau potable     │ Période       Paramètre          Réseau            │
+│ Dépassements des règles      │               Installation      Lieu d'analyse    │
+│ de qualité                   │                                                    │
+├──────────────────────────────┤                                                    │
+│ X résultats analysés         │                                                    │
+└──────────────────────────────┴────────────────────────────────────────────────────┘
+
+┌───────────────────────────────────┬───────────────────────────────────┐
+│ LIMITES DE QUALITÉ                │ RÉFÉRENCES DE QUALITÉ             │
+│                                   │                                   │
+│ X % de dépassement                │ X % de dépassement                │
+│ X résultats évaluables            │ X résultats évaluables            │
+│ Y dépassements                    │ Y dépassements                    │
+└───────────────────────────────────┴───────────────────────────────────┘
+
+                   ┌──────────────────────────────────┐
+                   │ Type de règle : [Sélection]      │
+                   └──────────────────────────────────┘
+
+┌───────────────────────────────────┬───────────────────────────────────┐
+│ TAUX DE DÉPASSEMENT PAR PARAMÈTRE │ ÉVOLUTION DES DÉPASSEMENTS        │
+│                                   │                                   │
+│ Paramètre A  ███████████  X %     │ Graphique combiné :              │
+│ Paramètre B  ███████      X %     │                                   │
+│ Paramètre C  ███          X %     │ Colonnes : nombre de             │
+│                                   │ dépassements (axe Y gauche)      │
+│ Paramètres avec un taux > 0 %     │                                   │
+│ uniquement                        │ Courbe : taux de dépassement      │
+│                                   │ (axe Y droit)                    │
+│ Infobulle :                       │                                   │
+│ - Résultats évaluables            │ Axe X : années                    │
+│ - Nombre de dépassements          │                                   │
+│ - Taux de dépassement             │ Granularité : Année → Mois        │
+└───────────────────────────────────┴───────────────────────────────────┘
 ```
 
-En cas d'absence de règle évaluable pour la sélection, les zones concernées doivent remplacer les taux et graphiques non calculables par un état explicite :
+Cette maquette représente la disposition effective de la page Power BI :
+
+- **Zone supérieure gauche :** titre de la page et nombre de résultats analysés.
+- **Zone supérieure droite :** filtres Période, Paramètre, Réseau, Installation et Lieu d'analyse.
+- **Zone centrale :** deux cartes KPI disposées horizontalement, distinguant les limites et les références de qualité.
+- **Zone intermédiaire :** sélecteur du type de règle, centré au-dessus des graphiques.
+- **Zone inférieure gauche :** graphique en barres horizontales présentant les taux de dépassement par paramètre, uniquement pour les paramètres dont le taux est supérieur à 0 %.
+- **Zone inférieure droite :** graphique combiné présentant l'évolution temporelle du nombre de dépassements et du taux de dépassement.
+
+Les valeurs `X`, `Y` et `X %` représentent des indicateurs dynamiques calculés selon les filtres actifs.
+
+En l'absence de règle évaluable pour la sélection, les indicateurs concernés doivent conserver un affichage explicite :
 
 ```text
 Non évaluable
-
 0 résultat évaluable
 — dépassement
-
-Aucune règle de qualité évaluable
-pour la sélection actuelle.
 ```
+
+Cette situation ne doit pas être interprétée comme un taux de dépassement égal à `0 %`.
 
 ---
 
