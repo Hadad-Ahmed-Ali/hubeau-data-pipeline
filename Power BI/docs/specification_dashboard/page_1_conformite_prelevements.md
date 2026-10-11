@@ -113,31 +113,15 @@ Chaque axe conserve son propre nombre de prélèvements évaluables et son propr
 
 ### 6.1 Présentation retenue
 
-Quatre cartes KPI compactes sont organisées en grille `2 × 2`.
+Quatre cartes KPI sont disposées horizontalement sur une seule ligne, dans l'ordre suivant :
 
-La première ligne présente les **limites de qualité**.
+1. **Limites bactériologiques**
+2. **Limites physico-chimiques**
+3. **Références bactériologiques**
+4. **Références physico-chimiques**
 
-La seconde ligne présente les **références de qualité**.
+Chaque carte présente le taux de conformité, le nombre de prélèvements évaluables et le nombre de prélèvements non conformes.
 
-    ┌─────────────────────────────┐  ┌─────────────────────────────┐
-    │ LIMITES BACTÉRIOLOGIQUES    │  │ LIMITES PHYSICO-CHIMIQUES  │
-    │                             │  │                             │
-    │            X %              │  │            X %              │
-    │       de conformité         │  │       de conformité         │
-    │                             │  │                             │
-    │  X évaluables               │  │  X évaluables               │
-    │  Y non conformes            │  │  Y non conformes            │
-    └─────────────────────────────┘  └─────────────────────────────┘
-
-    ┌─────────────────────────────┐  ┌─────────────────────────────┐
-    │ RÉFÉRENCES BACTÉRIOLOGIQUES │  │ RÉFÉRENCES PHYSICO-CHIM.   │
-    │                             │  │                             │
-    │            X %              │  │            X %              │
-    │       de conformité         │  │       de conformité         │
-    │                             │  │                             │
-    │  X évaluables               │  │  X évaluables               │
-    │  Y non conformes            │  │  Y non conformes            │
-    └─────────────────────────────┘  └─────────────────────────────┘
 
 ### 6.2 Informations affichées
 
@@ -242,39 +226,49 @@ Le filtrage par réseau doit respecter le grain du prélèvement et ne doit pas 
 
 ## 11. Maquette fonctionnelle simplifiée
 
-    ┌─────────────────────────────────────────────────────────────┐
-    │ PAGE 1 — CONFORMITÉ DES PRÉLÈVEMENTS                       │
-    │                                                             │
-    │ Période          Installation          Réseau               │
-    └─────────────────────────────────────────────────────────────┘
+La disposition retenue pour la page est la suivante :
 
-    ┌─────────────────────────────────────────────────────────────┐
-    │ Nombre total de prélèvements : X                            │
-    └─────────────────────────────────────────────────────────────┘
+```text
+┌───────────────────────────────┬──────────────────────────────────────────────┐
+│ Qualité de l'eau potable      │ Période                 Réseau               │
+│ Conformité des prélèvements   │                         Installation         │
+├───────────────────────────────┤                                              │
+│ X prélèvements analysés       │                                              │
+└───────────────────────────────┴──────────────────────────────────────────────┘
 
-    ┌────────────────────────────┐  ┌─────────────────────────────┐
-    │ Limites bactériologiques   │  │ Limites physico-chimiques  │
-    │ X %                        │  │ X %                         │
-    │ X évaluables               │  │ X évaluables               │
-    │ Y non conformes            │  │ Y non conformes            │
-    └────────────────────────────┘  └─────────────────────────────┘
+┌─────────────────────┬─────────────────────┬─────────────────────┬─────────────────────┐
+│ Limites             │ Limites             │ Références          │ Références          │
+│ bactériologiques    │ physico-chimiques   │ bactériologiques    │ physico-chimiques   │
+│                     │                     │                     │                     │
+│ X % de conformité   │ X % de conformité   │ X % de conformité   │ X % de conformité   │
+│ X évaluables        │ X évaluables        │ X évaluables        │ X évaluables        │
+│ Y non conformes     │ Y non conformes     │ Y non conformes     │ Y non conformes     │
+└─────────────────────┴─────────────────────┴─────────────────────┴─────────────────────┘
 
-    ┌────────────────────────────┐  ┌─────────────────────────────┐
-    │ Références bactériologiques│  │ Références physico-chim.   │
-    │ X %                        │  │ X %                         │
-    │ X évaluables               │  │ X évaluables               │
-    │ Y non conformes            │  │ Y non conformes            │
-    └────────────────────────────┘  └─────────────────────────────┘
+                      ┌───────────────────────────────────┐
+                      │ Type de contrôle : [Sélection]    │
+                      └───────────────────────────────────┘
 
-    ┌─────────────────────────────────────────────────────────────┐
-    │ Type de contrôle : [ Sélection ]                            │
-    │                                                             │
-    │ ÉVOLUTION DE LA CONFORMITÉ                                  │
-    │                                                             │
-    │ Taux de conformité + nombre de non-conformités              │
-    │                                                             │
-    │ Granularité : Année → Mois                                  │
-    └─────────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│ Évolution de la conformité des prélèvements selon le type de contrôle choisi           │
+│                                                                                        │
+│ Graphique combiné :                                                                    │
+│ - Colonnes : nombre de non-conformes (axe Y gauche)                                    │
+│ - Courbe : taux de conformité (axe Y droit)                                            │
+│ - Axe X : années                                                                       │
+│                                                                                        │
+│ Granularité : Année → Mois                                                             │
+└────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+Cette maquette représente la disposition effective de la page Power BI :
+
+- **Zone supérieure :** titre et nombre de prélèvements analysés à gauche, filtres Période, Réseau et Installation à droite.
+- **Zone centrale :** quatre cartes KPI de conformité disposées horizontalement.
+- **Zone intermédiaire :** sélecteur du type de contrôle, centré au-dessus du graphique.
+- **Zone inférieure :** graphique combiné présentant l'évolution temporelle du nombre de prélèvements non conformes et du taux de conformité.
+
+Les valeurs `X`, `Y` et `X %` représentent des indicateurs dynamiques, calculés selon les filtres actifs.
 
 ---
 
