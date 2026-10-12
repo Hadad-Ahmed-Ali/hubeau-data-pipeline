@@ -1,8 +1,19 @@
 # Hub'Eau Data Pipeline - Analyse de la qualité de l'eau potable
 
-**Projet de Data Analytics Engineering** : de l'extraction des données publiques Hub'Eau à leur analyse dans **Power BI**, via **Python, BigQuery, SQL et dbt**.
+**Auteur : Hadad Ahmed**
 
-**Périmètre étudié : Orléans (code commune `45234`) · 2016-2026 · 12 paramètres physico-chimiques et microbiologiques · 19 923 résultats d'analyse · 1 914 prélèvements.**
+**Projet personnel de Data Analytics Engineering** portant sur la conception d'un pipeline de données à partir de l'**API publique Hub'Eau - Qualité de l'eau potable** : de l'extraction des données à leur analyse et leur restitution dans **Power BI**, en utilisant **Python, BigQuery, SQL et dbt**.
+
+**Périmètre étudié :** Orléans (code commune `45234`) · 2016-2026 · 12 paramètres physico-chimiques et microbiologiques · 19 923 résultats d'analyse · 1 914 prélèvements.
+
+## 💧 Paramètres de qualité de l'eau étudiés
+
+L'analyse porte sur **12 paramètres de qualité de l'eau potable**, répartis en deux catégories :
+
+- **Paramètres physico-chimiques (10) :** turbidité, température, pH, conductivité, ammonium, nitrites, nitrates, fer, manganèse et chlore libre.
+- **Paramètres microbiologiques (2) :** *Escherichia coli* et entérocoques.
+
+Cette sélection permet d'étudier plusieurs dimensions de la qualité de l'eau potable, notamment ses caractéristiques physico-chimiques et la présence d'indicateurs de contamination microbiologique.
 
 ## 🎯 Pourquoi ce projet ?
 
@@ -188,7 +199,3 @@ hubeau-data-pipeline/
 - [Schéma analytique et décisions de modélisation](docs/schema_analytics/schema_analytics.md)
 - [Exploration de la modélisation dbt](dbt/docs/exploration_modelisation_dbt.md)
 - [Matrice des décisions de modélisation](dbt/docs/matrice_colonnes_modelisation_dbt.md)
-
-## 👤 Auteur
-
-**Hadad Ahmed** - Projet personnel de **Data Analytics Engineering**, réalisé à partir de données publiques pour mettre en pratique l'ingestion, la modélisation analytique, la qualité des données et la restitution décisionnelle.
