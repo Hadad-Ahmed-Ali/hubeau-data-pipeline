@@ -33,7 +33,7 @@ Le rapport suit ce parcours : **conformité globale → identification des dépa
 
 **Trois pages analytiques réalisées**, avec des filtres par période et, selon la page, par réseau, installation, paramètre et lieu d'analyse.
 
-**[📥 Consulter le rapport Power BI (.pbix)](Power%20BI/dashboard/dashboard_qualite_eau_potable.pbix)** · **[📖 Guide d'utilisation du dashboard](Power%20BI/guide_utilisation_dashboard.md)**
+**[📥 Consulter le rapport Power BI (.pbix)](Power%20BI/dashboard)** · **[📖 Guide d'utilisation du dashboard](Power%20BI/guide_utilisation_dashboard.md)**
 
 ### Page 1 - Conformité des prélèvements
 
