@@ -3,7 +3,7 @@
 
 Ce dashboard permet d'explorer la qualité de l'eau potable à Orléans à travers trois pages complémentaires.
 
-**[📥 Consulter le rapport Power BI (.pbix)](Power%20BI/dashboard/dashboard_qualite_eau_potable.pbix)**
+**[📥 Consulter le rapport Power BI (.pbix)](Power%20BI/dashboard)**
 
 ## Navigation générale
 
