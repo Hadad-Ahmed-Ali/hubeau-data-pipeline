@@ -1,4 +1,3 @@
-
 # Guide d'utilisation du dashboard Power BI
 
 Ce dashboard permet d'explorer la qualité de l'eau potable à Orléans à travers trois pages complémentaires.
@@ -48,3 +47,6 @@ Ce dashboard permet d'explorer la qualité de l'eau potable à Orléans à trave
 **Page 1 - Conformité globale → Page 2 - Dépassements → Page 3 - Analyse détaillée des paramètres**
 
 Ce parcours permet de passer d'une vision générale de la qualité de l'eau à une analyse plus précise des résultats.
+
+**Notez Bien :** Je reste disponible pour toute question sur ce guide afin de vous accompagner si nécessaire, laisse moi donc un message sur [Mon Profil LinkedIn](https://www.linkedin.com/in/hadad-ahmed-17104026a)
+
